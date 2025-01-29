@@ -1,0 +1,112 @@
+/* Estilos específicos do componente GerenciarAlunosSection */
+.gerenciar-alunos.section {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 25px;
+  transition: all 0.3s ease;
+}
+
+.gerenciar-alunos h3 {
+  color: #b89c54;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+
+.alunos-list {
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.alunos-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.alunos-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.alunos-list::-webkit-scrollbar-thumb {
+  background: #b89c54;
+  border-radius: 4px;
+}
+
+.alunos-list p {
+  color: #666;
+  text-align: center;
+  padding: 20px;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Estilos do Card de Aluno */
+.aluno-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  animation: slideIn 0.4s ease forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.aluno-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.aluno-card:nth-child(even) {
+  background: #fafafa;
+}
+
+.aluno-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.aluno-card:hover .aluno-actions {
+  opacity: 1;
+}
+
+/* Animações */
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .gerenciar-alunos.section {
+    padding: 20px;
+  }
+
+  .aluno-card {
+    padding: 12px;
+  }
+
+  .alunos-list {
+    max-height: 500px;
+  }
+}

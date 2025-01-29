@@ -1,0 +1,71 @@
+/* Estilos específicos do componente AddAlunoSection */
+.add-aluno.section {
+  transition: all 0.3s ease;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.add-aluno h3 {
+  color: #b89c54;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.add-aluno .primary-button {
+  width: 100%;
+  max-width: 200px;
+  margin-top: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.add-aluno .aluno-form {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.add-aluno .form-buttons {
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.add-aluno .secondary-button {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.add-aluno .secondary-button:hover {
+  background-color: #d0d0d0;
+}
+
+/* Ajustes de responsividade */
+@media (max-width: 768px) {
+  .add-aluno.section {
+    padding: 20px;
+  }
+
+  .add-aluno .primary-button {
+    max-width: 100%;
+  }
+}

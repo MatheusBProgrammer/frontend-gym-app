@@ -1,0 +1,101 @@
+/* Estilos globais da HomePage */
+.wrapper {
+  min-height: 100vh;
+  background-color: #fafafa;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  align-items: start;
+}
+
+.section {
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  height: fit-content;
+}
+
+.alunos-list {
+  margin-top: 25px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.logoutButton {
+  position: fixed;
+  top: 25px;
+  right: 25px;
+  background-color: #b89c54;
+  color: white;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logoutButton:hover {
+  background-color: #a08444;
+  transform: translateY(-1px);
+}
+
+.error-message {
+  color: #721c24;
+  background-color: #f8d7da;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+  font-size: 14px;
+}
+
+.success-message {
+  color: #155724;
+  background-color: #d4edda;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border: 1px solid #c3e6cb;
+  font-size: 14px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .dashboard-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .logoutButton {
+    position: static;
+    margin-top: 10px;
+  }
+}

@@ -1,0 +1,60 @@
+/* src/styles/AlunoForm.css */
+
+.aluno-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aluno-form input,
+.aluno-form select {
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 15px;
+  background: #fff;
+  transition: border-color 0.3s ease;
+}
+
+.aluno-form input:focus,
+.aluno-form select:focus {
+  border-color: #cf9e4d;
+  outline: none;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.primary-button {
+  background-color: #b89c54; /* Dourado claro */
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.primary-button:hover {
+  background-color: #a08444; /* Tom mais escuro */
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  background-color: #e0c190; /* Bege dourado */
+  color: #333;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondary-button:hover {
+  background-color: #d0b080;
+  transform: translateY(-1px);
+}
