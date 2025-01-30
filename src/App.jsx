@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import PrivateRoute from "./components/PrivateRoute";
 import { AlunoProvider } from "./context/AlunoContext";
+import AlunoPage from "./pages/AlunoPage";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route path="/aluno/:id" element={<AlunoPage />} />
           </Routes>
         </AlunoProvider>
       </AuthProvider>

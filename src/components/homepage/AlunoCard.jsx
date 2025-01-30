@@ -1,61 +1,67 @@
+import { Link } from "react-router-dom";
 import "./styles/AlunoCard.css";
 
 const AlunoCard = ({ aluno }) => {
+  const handleAction = (e, actionType) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(`${actionType} aluno ${aluno._id}`);
+  };
+
   return (
-    <div className="aluno-card">
-      <div className="aluno-info">
-        <p>
-          <strong>Nome:</strong> {aluno.nome}
-        </p>
-        <p>
-          <strong>Email:</strong> {aluno.email}
-        </p>
-        <p>
-          <strong>Objetivo:</strong> {aluno.objetivo}
-        </p>
-      </div>
-
-      <div className="aluno-actions">
-        <button className="add-workout-button">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            viewBox="0 0 16 16"
+    <Link to={`/aluno/${aluno._id}`} className="aluno-card">
+      <div className="card-content">
+        <div className="header-section">
+          <h3>{aluno.nome}</h3>
+          <button
+            className="icon-button add-workout"
+            onClick={(e) => handleAction(e, "add-workout")}
+            title="Adicionar treino"
           >
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-          </svg>
-          Adicionar Treinos
-        </button>
-
-        <div className="right-actions">
-          <button className="edit-button">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 16 16"
-            >
-              <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
             </svg>
-            Editar
           </button>
-          <button className="delete-button">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              viewBox="0 0 16 16"
+        </div>
+
+        <div className="info-section">
+          <div className="detail-item">
+            <label>Email</label>
+            <p>{aluno.email}</p>
+          </div>
+          <div className="detail-item">
+            <label>Objetivo</label>
+            <span
+              className={`objetivo-tag ${aluno.objetivo.replace(/\s/g, "-")}`}
             >
-              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z" />
-              <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z" />
+              {aluno.objetivo}
+            </span>
+          </div>
+        </div>
+
+        <div className="actions-bottom">
+          <button
+            className="icon-button edit"
+            onClick={(e) => handleAction(e, "edit")}
+            title="Editar aluno"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
             </svg>
-            Excluir
+          </button>
+
+          <button
+            className="icon-button delete"
+            onClick={(e) => handleAction(e, "delete")}
+            title="Excluir aluno"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+            </svg>
           </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
