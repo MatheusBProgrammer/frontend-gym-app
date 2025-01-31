@@ -47,10 +47,16 @@ function AlunoPage() {
     }
   }, [id, alunos, navigate]);
 
+  // --- Ajuste para DELETE com body via axios.delete(...) ---
   const handleCRUD = async (method, endpoint, data) => {
     try {
       setLoading(true);
-      await method(endpoint, data);
+      // Se for DELETE, precisamos enviar o body em "data"
+      if (method === api.delete) {
+        await method(endpoint, { data });
+      } else {
+        await method(endpoint, data);
+      }
       const updated = await api.get(`/api/aluno/${id}`);
       setAluno(updated.data);
       fetchAlunos();
@@ -62,15 +68,24 @@ function AlunoPage() {
     }
   };
 
-  // Ações CRUD
+  // Cria nova rotina
   const handleCreateRotina = () =>
     handleCRUD(api.post, `/api/aluno/rotina/${id}`);
 
+  // Deleta TODAS as rotinas
   const handleDeleteRotinas = () =>
     handleCRUD(api.delete, `/api/aluno/rotina/deletar-rotinas`, {
       alunoId: id,
     });
 
+  // Deleta UMA rotina específica
+  const handleDeleteRotina = (rotinaId) =>
+    handleCRUD(api.delete, `/api/aluno/rotina/deletar-rotina`, {
+      alunoId: id,
+      rotinaId,
+    });
+
+  // Adiciona ou atualiza um treino
   const handleTreinoAction = (rotinaId, treinoId = null, data) => {
     const baseEndpoint = `/api/aluno/rotina/${id}/${rotinaId}/treinos`;
     const method = treinoId ? api.put : api.post;
@@ -78,6 +93,7 @@ function AlunoPage() {
     return handleCRUD(method, endpoint, data);
   };
 
+  // Adiciona ou atualiza um exercício
   const handleExercicioAction = (
     rotinaId,
     treinoId,
@@ -92,6 +108,7 @@ function AlunoPage() {
     return handleCRUD(method, endpoint, data);
   };
 
+  // Deleta treino ou exercício (já existia)
   const handleDelete = (type, ids) => {
     const endpoints = {
       treino: `/api/aluno/rotina/${id}/${ids.rotinaId}/treinos/${ids.treinoId}`,
@@ -113,6 +130,9 @@ function AlunoPage() {
         <div className="actions">
           <Button onClick={() => setModalType("nova_rotina")}>
             + Nova Rotina
+          </Button>{" "}
+          <Button variant="danger" onClick={handleDeleteRotinas}>
+            Remover Todas as rotinas
           </Button>
         </div>
       </div>
@@ -156,8 +176,13 @@ function AlunoPage() {
                 >
                   + Novo Treino
                 </Button>
-                <Button variant="danger" onClick={() => handleDeleteRotinas()}>
-                  Remover Todas
+
+                {/* Botão para REMOVER somente ESTA rotina */}
+                <Button
+                  variant="danger"
+                  onClick={() => handleDeleteRotina(rotina._id)}
+                >
+                  Apagar Esta Rotina
                 </Button>
               </div>
             </div>
@@ -168,7 +193,6 @@ function AlunoPage() {
                   <h4>{treino.grupoMuscular}</h4>
                   <div className="treino-actions">
                     <div className="treino-header-icons">
-                      {" "}
                       <Button
                         icon="edit"
                         onClick={() => {

@@ -98,10 +98,7 @@
   justify-content: center;
   align-items: center;
 }
-.treino-header-icons button {
-  margin-left: 0.5em;
-  font-size: 0.8em;
-}
+
 .treino-header-icons button {
   margin-left: 0.5em;
   font-size: 0.8em;
@@ -145,4 +142,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin: 1rem 0;
+}
+button {
+  margin-left: 1em;
 }
