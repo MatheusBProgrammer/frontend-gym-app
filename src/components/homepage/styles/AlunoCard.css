@@ -1,4 +1,7 @@
-/* AlunoCard.css */
+/* ===================== */
+/* Estilos para AlunoCard */
+/* ===================== */
+
 .aluno-card {
   background: #fff;
   border-radius: 12px;
@@ -8,6 +11,7 @@
   display: block;
   text-decoration: none;
   color: inherit;
+  margin-bottom: 1rem;
 }
 
 .aluno-card:hover {
@@ -15,97 +19,156 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-.card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-section h3 {
-  margin: 0;
-  color: #1a1a1a;
+.aluno-card h4 {
+  margin-bottom: 0.5rem;
   font-size: 1.2rem;
+  color: #1a1a1a;
   font-weight: 600;
 }
 
-.info-section {
-  display: grid;
-  gap: 1rem;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.detail-item label {
-  font-size: 0.75rem;
-  color: #666;
-  font-weight: 500;
-}
-
-.detail-item p {
-  margin: 0;
+.aluno-card p {
   font-size: 0.95rem;
+  margin-bottom: 0.5rem;
   color: #333;
 }
 
-.objetivo-tag {
-  background: #e8f5e9;
-  color: #2e7d32;
-  padding: 0.35rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  width: fit-content;
-}
-
-.actions-bottom {
+/* Ações (botões de Editar/Excluir) */
+.actions-row {
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
   border-top: 1px solid #eee;
   padding-top: 1rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
 }
 
-.icon-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+.editAlunoButton,
+.deleteAlunoButton {
   border: none;
-  background: transparent;
+  padding: 8px 14px;
+  border-radius: 4px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 
-.icon-button:hover {
-  background: #f5f5f5;
+.editAlunoButton {
+  background-color: #1976d2;
+  color: #fff;
 }
 
-.icon-button.add-workout svg {
-  fill: #2e7d32;
+.editAlunoButton:hover {
+  background-color: #1565c0;
+  transform: translateY(-2px);
 }
 
-.icon-button.edit svg {
-  fill: #1976d2;
+.deleteAlunoButton {
+  background-color: #d32f2f;
+  color: #fff;
 }
 
-.icon-button.delete svg {
-  fill: #d32f2f;
+.deleteAlunoButton:hover {
+  background-color: #c62828;
+  transform: translateY(-2px);
 }
 
-.icon-button svg {
-  width: 20px;
-  height: 20px;
+/* ===================== */
+/* Estilos para o Modal  */
+/* ===================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.modal h2 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal form label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.modal form input,
+.modal form select {
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.confirmEditButton {
+  background-color: #2ecc71;
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.confirmEditButton:hover {
+  background-color: #27ae60;
+  transform: translateY(-2px);
+}
+
+.cancelEditButton {
+  background-color: #95a5a6;
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.cancelEditButton:hover {
+  background-color: #7f8c8d;
+  transform: translateY(-2px);
+}
+
+/* ========================== */
+/* Validação da Senha (Erro)  */
+/* ========================== */
+
+.password-error {
+  color: #d32f2f;
+  font-size: 0.85rem;
+  margin-top: 4px;
 }

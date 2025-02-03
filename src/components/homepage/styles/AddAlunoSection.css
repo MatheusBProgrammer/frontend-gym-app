@@ -1,71 +1,50 @@
-/* Estilos específicos do componente AddAlunoSection */
-.add-aluno.section {
-  transition: all 0.3s ease;
-  padding: 25px;
-  background: rgba(255, 255, 255, 0.95);
+.section.add-aluno {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
-.add-aluno h3 {
-  color: #b89c54;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+.section.add-aluno h3 {
+  margin-bottom: 15px;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+/* Mensagens de Erro/Sucesso */
+.error-message {
+  color: #721c24;
+  background-color: #f8d7da;
+  padding: 12px;
+  border-radius: 4px;
   margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+  font-size: 14px;
 }
 
-.add-aluno .primary-button {
-  width: 100%;
-  max-width: 200px;
-  margin-top: 10px;
-  animation: fadeIn 0.3s ease;
+.success-message {
+  color: #155724;
+  background-color: #d4edda;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border: 1px solid #c3e6cb;
+  font-size: 14px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Botão principal */
+.primary-button {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 
-.add-aluno .aluno-form {
-  animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.add-aluno .form-buttons {
-  justify-content: flex-end;
-  margin-top: 25px;
-}
-
-.add-aluno .secondary-button {
-  background-color: #e0e0e0;
-  color: #333;
-}
-
-.add-aluno .secondary-button:hover {
-  background-color: #d0d0d0;
-}
-
-/* Ajustes de responsividade */
-@media (max-width: 768px) {
-  .add-aluno.section {
-    padding: 20px;
-  }
-
-  .add-aluno .primary-button {
-    max-width: 100%;
-  }
+.primary-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-1px);
 }

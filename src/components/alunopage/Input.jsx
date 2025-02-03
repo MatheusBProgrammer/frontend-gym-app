@@ -1,17 +1,28 @@
 import React from "react";
 import "../styles/Input.css";
 
-const Input = ({ label, type = "text", ...props }) => {
+function Input({ label, value, onChange, type = "text", ...rest }) {
   return (
     <div className="input-group">
-      {label && <label>{label}</label>}
+      {label && <label className="input-label">{label}</label>}
       {type === "textarea" ? (
-        <textarea {...props} />
+        <textarea
+          value={value}
+          onChange={onChange}
+          className="input-field"
+          {...rest}
+        />
       ) : (
-        <input type={type} {...props} />
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          className="input-field"
+          {...rest}
+        />
       )}
     </div>
   );
-};
+}
 
 export default Input;

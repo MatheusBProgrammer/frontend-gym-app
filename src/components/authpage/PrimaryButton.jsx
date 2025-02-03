@@ -1,13 +1,13 @@
-// src/components/GoldButton.jsx
+// src/components/authpage/PrimaryButton.jsx
 import React from "react";
 
-function GoldButton({ children, onClick, type = "button", style = {} }) {
+function PrimaryButton({ children, onClick, type = "button", style = {} }) {
   return (
     <button
       type={type}
       onClick={onClick}
       style={{
-        backgroundColor: "#CF9E4D", // tom de dourado
+        backgroundColor: "#3498db",
         color: "#fff",
         padding: "12px 24px",
         border: "none",
@@ -15,17 +15,17 @@ function GoldButton({ children, onClick, type = "button", style = {} }) {
         cursor: "pointer",
         fontWeight: "bold",
         fontSize: "1rem",
-        boxShadow: "0 4px 8px rgba(207, 158, 77, 0.3)",
+        boxShadow: "0 4px 8px rgba(52, 152, 219, 0.3)",
         transition: "transform 0.2s ease, box-shadow 0.2s ease",
         ...style,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "translateY(-1px)";
-        e.currentTarget.style.boxShadow = "0 8px 16px rgba(207, 158, 77, 0.5)";
+        e.currentTarget.style.boxShadow = "0 8px 16px rgba(52, 152, 219, 0.4)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "0 4px 8px rgba(207, 158, 77, 0.3)";
+        e.currentTarget.style.boxShadow = "0 4px 8px rgba(52, 152, 219, 0.3)";
       }}
     >
       {children}
@@ -33,4 +33,4 @@ function GoldButton({ children, onClick, type = "button", style = {} }) {
   );
 }
 
-export default GoldButton;
+export default PrimaryButton;

@@ -8,15 +8,44 @@ import Input from "../components/alunopage/Input";
 import Select from "../components/alunopage/Select";
 import "../styles/AlunoPage.css";
 
+// 1. Array com os grupos musculares pré-definidos:
+const grupoMuscularOptions = [
+  { value: "peitoral", label: "Peitoral" },
+  { value: "costas", label: "Costas" },
+  { value: "ombros", label: "Ombros" },
+  { value: "biceps", label: "Bíceps" },
+  { value: "triceps", label: "Tríceps" },
+  { value: "gluteos", label: "Glúteos" },
+  { value: "quadriceps", label: "Quadríceps" },
+  { value: "posterior-coxa", label: "Posterior da Coxa" },
+  { value: "panturrilhas", label: "Panturrilhas" },
+  { value: "adutores", label: "Adutores" },
+  { value: "abdutores", label: "Abdutores" },
+  { value: "abdominal", label: "Abdominal" },
+  { value: "lombar", label: "Lombar" },
+  { value: "obliquos", label: "Oblíquos" },
+  { value: "trapezio", label: "Trapézio" },
+  { value: "antebracos", label: "Antebraços" },
+];
+
+// 2. Importações do Chart.js
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
+ChartJS.register(ArcElement, Tooltip, Legend, Title);
+
 function AlunoPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { alunos, fetchAlunos } = useContext(AlunoContext);
+
   const [aluno, setAluno] = useState(null);
   const [modalType, setModalType] = useState(null);
   const [selectedItem, setSelectedItem] = useState({});
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // Estado para controlar exibição do gráfico
+  const [showChart, setShowChart] = useState(false);
 
   // Estados para formulários
   const emptyTreino = { grupoMuscular: "", observacoes: "" };
@@ -26,6 +55,7 @@ function AlunoPage() {
     repeticoes: 12,
     series: 4,
     descanso: 90,
+    observacoes: "",
   };
 
   useEffect(() => {
@@ -47,11 +77,10 @@ function AlunoPage() {
     }
   }, [id, alunos, navigate]);
 
-  // --- Ajuste para DELETE com body via axios.delete(...) ---
+  // Função genérica para operações CRUD
   const handleCRUD = async (method, endpoint, data) => {
     try {
       setLoading(true);
-      // Se for DELETE, precisamos enviar o body em "data"
       if (method === api.delete) {
         await method(endpoint, { data });
       } else {
@@ -68,24 +97,20 @@ function AlunoPage() {
     }
   };
 
-  // Cria nova rotina
+  // Operações com rotinas
   const handleCreateRotina = () =>
     handleCRUD(api.post, `/api/aluno/rotina/${id}`);
-
-  // Deleta TODAS as rotinas
   const handleDeleteRotinas = () =>
     handleCRUD(api.delete, `/api/aluno/rotina/deletar-rotinas`, {
       alunoId: id,
     });
-
-  // Deleta UMA rotina específica
   const handleDeleteRotina = (rotinaId) =>
     handleCRUD(api.delete, `/api/aluno/rotina/deletar-rotina`, {
       alunoId: id,
       rotinaId,
     });
 
-  // Adiciona ou atualiza um treino
+  // Operações com treinos
   const handleTreinoAction = (rotinaId, treinoId = null, data) => {
     const baseEndpoint = `/api/aluno/rotina/${id}/${rotinaId}/treinos`;
     const method = treinoId ? api.put : api.post;
@@ -93,7 +118,7 @@ function AlunoPage() {
     return handleCRUD(method, endpoint, data);
   };
 
-  // Adiciona ou atualiza um exercício
+  // Operações com exercícios
   const handleExercicioAction = (
     rotinaId,
     treinoId,
@@ -108,7 +133,7 @@ function AlunoPage() {
     return handleCRUD(method, endpoint, data);
   };
 
-  // Deleta treino ou exercício (já existia)
+  // Deletar treino ou exercício
   const handleDelete = (type, ids) => {
     const endpoints = {
       treino: `/api/aluno/rotina/${id}/${ids.rotinaId}/treinos/${ids.treinoId}`,
@@ -117,84 +142,164 @@ function AlunoPage() {
     return handleCRUD(api.delete, endpoints[type]);
   };
 
+  // Se não carregou ainda, exibe "Carregando"
   if (!aluno) return <div className="loading">Carregando...</div>;
+
+  // 3. Função para calcular a contagem de exercícios em cada grupo muscular
+  const computeMuscleGroupDistribution = () => {
+    const distribution = {}; // Ex: { peitoral: 3, costas: 8, ... }
+
+    // Percorre cada rotina
+    aluno.rotinas.forEach((rotina) => {
+      // Dentro de cada rotina, percorre cada treino
+      rotina.treinos.forEach((treino) => {
+        const group = treino.grupoMuscular;
+        // Soma a quantidade de exercícios APENAS se houver pelo menos 1 exercício
+        if (group && treino.exercicios.length > 0) {
+          distribution[group] =
+            (distribution[group] || 0) + treino.exercicios.length;
+        }
+      });
+    });
+
+    return distribution;
+  };
+
+  // 4. Gerar dados para o Pie Chart
+  const muscleGroupData = computeMuscleGroupDistribution();
+  const chartData = {
+    labels: Object.keys(muscleGroupData),
+    datasets: [
+      {
+        label: "Exercícios por Grupo Muscular",
+        data: Object.values(muscleGroupData),
+        backgroundColor: [
+          "#FF6384",
+          "#36A2EB",
+          "#FFCE56",
+          "#4BC0C0",
+          "#9966FF",
+          "#FF9F40",
+          "#FFCD56",
+          "#C9CBCF",
+          "#36E2EB",
+          "#80FF80",
+          "#FFC0CB",
+          "#BDB76B",
+          "#4682B4",
+          "#556B2F",
+          "#8B008B",
+          "#FF8C00",
+        ],
+        hoverOffset: 10,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: "Gráfico de Exercícios por Grupo Muscular",
+        font: { size: 12 },
+      },
+      legend: {
+        position: "bottom",
+      },
+    },
+    animation: {
+      duration: 800,
+    },
+  };
 
   return (
     <div className="aluno-page">
-      <button onClick={() => navigate(-1)} className="back-button">
-        ← Voltar
-      </button>
-
-      <div className="header-section">
+      {/* Cabeçalho */}
+      <header className="header">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          ← Voltar
+        </button>
         <h1>{aluno.nome}</h1>
-        <div className="actions">
-          <Button onClick={() => setModalType("nova_rotina")}>
-            + Nova Rotina
-          </Button>{" "}
-          <Button variant="danger" onClick={handleDeleteRotinas}>
-            Remover Todas as rotinas
-          </Button>
-        </div>
-      </div>
 
-      <div className="info-grid">
-        <div className="info-item">
+        {/* 5. Botão para exibir/ocultar o gráfico */}
+        <Button variant="outline" onClick={() => setShowChart(!showChart)}>
+          {showChart ? "Ocultar Gráfico" : "Ver Gráfico"}
+        </Button>
+      </header>
+
+      {/* 6. Mostrar gráfico se showChart for true */}
+      {showChart && (
+        <div className="chart-container">
+          <Pie data={chartData} options={chartOptions} />
+        </div>
+      )}
+
+      {/* Informações do Aluno */}
+      <section className="student-details">
+        <div className="detail-card">
           <label>Email</label>
           <p>{aluno.email}</p>
         </div>
-        <div className="info-item">
+        <div className="detail-card">
           <label>Gênero</label>
           <p>{aluno.genero}</p>
         </div>
-        <div className="info-item">
+        <div className="detail-card">
           <label>Objetivo</label>
-          <p className="objetivo">{aluno.objetivo}</p>
+          <p>{aluno.objetivo}</p>
         </div>
-      </div>
+      </section>
 
-      <h2>Rotinas de Treino</h2>
+      {/* Ações Gerais */}
+      <section className="actions">
+        <Button onClick={() => setModalType("nova_rotina")} variant="primary">
+          + Nova Rotina
+        </Button>
+        <Button onClick={handleDeleteRotinas} variant="danger">
+          Remover Todas as Rotinas
+        </Button>
+      </section>
 
-      {aluno.rotinas.length === 0 ? (
-        <div className="empty-state">
-          <p>Nenhuma rotina cadastrada</p>
-        </div>
-      ) : (
-        aluno.rotinas.map((rotina) => (
-          <div key={rotina._id} className="rotina-card">
-            <div className="rotina-header">
-              <h3>
-                Rotina de {new Date(rotina.createdAt).toLocaleDateString()}
-              </h3>
-              <div className="rotina-actions">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedItem({ rotinaId: rotina._id });
-                    setFormData(emptyTreino);
-                    setModalType("novo_treino");
-                  }}
-                >
-                  + Novo Treino
-                </Button>
-
-                {/* Botão para REMOVER somente ESTA rotina */}
-                <Button
-                  variant="danger"
-                  onClick={() => handleDeleteRotina(rotina._id)}
-                >
-                  Apagar Esta Rotina
-                </Button>
+      {/* Rotinas de Treino */}
+      <section className="rotinas">
+        <h2>Rotinas de Treino</h2>
+        {aluno.rotinas.length === 0 ? (
+          <p className="empty">Nenhuma rotina cadastrada.</p>
+        ) : (
+          aluno.rotinas.map((rotina) => (
+            <div key={rotina._id} className="rotina">
+              <div className="rotina-header">
+                <h3>
+                  Rotina de {new Date(rotina.createdAt).toLocaleDateString()}
+                </h3>
+                <div className="rotina-actions">
+                  <Button
+                    onClick={() => {
+                      setSelectedItem({ rotinaId: rotina._id });
+                      setFormData(emptyTreino);
+                      setModalType("novo_treino");
+                    }}
+                    variant="outline"
+                  >
+                    + Novo Treino
+                  </Button>
+                  <Button
+                    onClick={() => handleDeleteRotina(rotina._id)}
+                    variant="danger"
+                  >
+                    Apagar Rotina
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            {rotina.treinos.map((treino) => (
-              <div key={treino._id} className="treino-card">
-                <div className="treino-header">
-                  <h4>{treino.grupoMuscular}</h4>
-                  <div className="treino-actions">
-                    <div className="treino-header-icons">
+              {rotina.treinos.map((treino) => (
+                <div key={treino._id} className="treino">
+                  <div className="treino-header">
+                    {/* Exibimos o grupoMuscular escolhido */}
+                    <h4>{treino.grupoMuscular}</h4>
+                    <div className="treino-actions">
                       <Button
-                        icon="edit"
                         onClick={() => {
                           setSelectedItem({
                             rotinaId: rotina._id,
@@ -203,87 +308,89 @@ function AlunoPage() {
                           setFormData(treino);
                           setModalType("editar_treino");
                         }}
+                        variant="outline"
                       >
-                        Editar treino
+                        Editar Treino
                       </Button>
                       <Button
-                        icon="delete"
-                        variant="danger"
                         onClick={() =>
                           handleDelete("treino", {
                             rotinaId: rotina._id,
                             treinoId: treino._id,
                           })
                         }
+                        variant="danger"
                       >
-                        Apagar treino
+                        Apagar Treino
                       </Button>
                     </div>
                   </div>
-                </div>
-                <p className="observacoes">{treino.observacoes}</p>
+                  <p className="observacoes">{treino.observacoes}</p>
 
-                <div className="exercicios-list">
-                  {treino.exercicios.map((exercicio) => (
-                    <div key={exercicio._id} className="exercicio-item">
-                      <div className="exercicio-info">
-                        <h5>{exercicio.nome}</h5>
-                        <div className="exercicio-details">
-                          <span>Tipo: {exercicio.tipo}</span>
-                          <span>
+                  <div className="exercicios">
+                    {treino.exercicios.map((exercicio) => (
+                      <div key={exercicio._id} className="exercicio">
+                        <div className="exercicio-info">
+                          <h5>{exercicio.nome}</h5>
+                          <p>Tipo: {exercicio.tipo}</p>
+                          <p>
                             {exercicio.series}x{exercicio.repeticoes}
-                          </span>
-                          <span>Descanso: {exercicio.descanso}s</span>
+                          </p>
+                          <p>Descanso: {exercicio.descanso}s</p>
+                          {exercicio.observacoes && (
+                            <p>Observações: {exercicio.observacoes}</p>
+                          )}
+                        </div>
+                        <div className="exercicio-actions">
+                          <Button
+                            onClick={() => {
+                              setSelectedItem({
+                                rotinaId: rotina._id,
+                                treinoId: treino._id,
+                                exercicioId: exercicio._id,
+                              });
+                              setFormData(exercicio);
+                              setModalType("editar_exercicio");
+                            }}
+                            variant="outline"
+                          >
+                            Editar Exercício
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              handleDelete("exercicio", {
+                                rotinaId: rotina._id,
+                                treinoId: treino._id,
+                                exercicioId: exercicio._id,
+                              })
+                            }
+                            variant="danger"
+                          >
+                            Apagar Exercício
+                          </Button>
                         </div>
                       </div>
-                      <div className="exercicio-actions">
-                        <Button
-                          onClick={() => {
-                            setSelectedItem({
-                              rotinaId: rotina._id,
-                              treinoId: treino._id,
-                              exercicioId: exercicio._id,
-                            });
-                            setFormData(exercicio);
-                            setModalType("editar_exercicio");
-                          }}
-                        >
-                          Editar exercício
-                        </Button>
-                        <Button
-                          variant="danger"
-                          onClick={() =>
-                            handleDelete("exercicio", {
-                              rotinaId: rotina._id,
-                              treinoId: treino._id,
-                              exercicioId: exercicio._id,
-                            })
-                          }
-                        >
-                          Apagar exercício
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedItem({
-                        rotinaId: rotina._id,
-                        treinoId: treino._id,
-                      });
-                      setFormData(emptyExercicio);
-                      setModalType("novo_exercicio");
-                    }}
-                  >
-                    + Novo Exercício
-                  </Button>
+                    ))}
+                    <Button
+                      onClick={() => {
+                        setSelectedItem({
+                          rotinaId: rotina._id,
+                          treinoId: treino._id,
+                        });
+                        setFormData(emptyExercicio);
+                        setModalType("novo_exercicio");
+                      }}
+                      variant="outline"
+                    >
+                      + Novo Exercício
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ))
-      )}
+              ))}
+            </div>
+          ))
+        )}
+      </section>
 
       {/* Modais */}
       <Modal
@@ -291,29 +398,40 @@ function AlunoPage() {
         onClose={() => setModalType(null)}
         title="Nova Rotina"
       >
-        <p>Tem certeza que deseja criar uma nova rotina?</p>
+        <p>Deseja criar uma nova rotina?</p>
         <div className="modal-actions">
-          <Button onClick={handleCreateRotina} loading={loading}>
+          <Button
+            onClick={handleCreateRotina}
+            variant="primary"
+            loading={loading}
+          >
             Confirmar
           </Button>
-          <Button variant="secondary" onClick={() => setModalType(null)}>
+          <Button onClick={() => setModalType(null)} variant="outline">
             Cancelar
           </Button>
         </div>
       </Modal>
 
       <Modal
-        isOpen={modalType?.includes("treino")}
+        isOpen={modalType && modalType.includes("treino")}
         onClose={() => setModalType(null)}
-        title={`${modalType?.includes("editar") ? "Editar" : "Novo"} Treino`}
+        title={
+          modalType && modalType.includes("editar")
+            ? "Editar Treino"
+            : "Novo Treino"
+        }
       >
-        <Input
+        {/* Campo de Grupo Muscular usando Select */}
+        <Select
           label="Grupo Muscular"
           value={formData.grupoMuscular || ""}
           onChange={(e) =>
             setFormData({ ...formData, grupoMuscular: e.target.value })
           }
+          options={grupoMuscularOptions}
         />
+
         <Input
           label="Observações"
           type="textarea"
@@ -331,20 +449,25 @@ function AlunoPage() {
                 formData
               )
             }
+            variant="primary"
             loading={loading}
           >
             Salvar
           </Button>
-          <Button variant="secondary" onClick={() => setModalType(null)}>
+          <Button onClick={() => setModalType(null)} variant="outline">
             Cancelar
           </Button>
         </div>
       </Modal>
 
       <Modal
-        isOpen={modalType?.includes("exercicio")}
+        isOpen={modalType && modalType.includes("exercicio")}
         onClose={() => setModalType(null)}
-        title={`${modalType?.includes("editar") ? "Editar" : "Novo"} Exercício`}
+        title={
+          modalType && modalType.includes("editar")
+            ? "Editar Exercício"
+            : "Novo Exercício"
+        }
       >
         <Input
           label="Nome do Exercício"
@@ -354,12 +477,12 @@ function AlunoPage() {
         <Select
           label="Tipo"
           value={formData.tipo || "musculacao"}
+          onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
           options={[
             { value: "musculacao", label: "Musculação" },
             { value: "cardio", label: "Cardio" },
             { value: "funcional", label: "Funcional" },
           ]}
-          onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
         />
         <div className="form-row">
           <Input
@@ -387,6 +510,13 @@ function AlunoPage() {
             }
           />
         </div>
+        <Input
+          label="Observação"
+          value={formData.observacoes || ""}
+          onChange={(e) =>
+            setFormData({ ...formData, observacoes: e.target.value })
+          }
+        />
         <div className="modal-actions">
           <Button
             onClick={() =>
@@ -397,11 +527,12 @@ function AlunoPage() {
                 formData
               )
             }
+            variant="primary"
             loading={loading}
           >
             Salvar
           </Button>
-          <Button variant="secondary" onClick={() => setModalType(null)}>
+          <Button onClick={() => setModalType(null)} variant="outline">
             Cancelar
           </Button>
         </div>

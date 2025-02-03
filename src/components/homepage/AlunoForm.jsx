@@ -32,6 +32,7 @@ const AlunoForm = ({
         onChange={handleInputChange}
         required
       />
+
       <select
         name="genero"
         value={formData.genero}
@@ -42,11 +43,12 @@ const AlunoForm = ({
         <option value="feminino">Feminino</option>
         <option value="outro">Outro</option>
       </select>
+
       <input
         type="number"
         name="altura"
         step="0.01"
-        placeholder="Altura (metros)"
+        placeholder="Altura (m)"
         value={formData.altura}
         onChange={handleInputChange}
         required
@@ -59,6 +61,7 @@ const AlunoForm = ({
         onChange={handleInputChange}
         required
       />
+
       <select
         name="objetivo"
         value={formData.objetivo}
@@ -69,6 +72,7 @@ const AlunoForm = ({
         <option value="perda de peso">Perda de Peso</option>
         <option value="manutenção">Manutenção</option>
       </select>
+
       <div className="form-buttons">
         <button type="submit" className="primary-button">
           Cadastrar

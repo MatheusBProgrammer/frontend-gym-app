@@ -6,9 +6,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const storedAuth = localStorage.getItem("authData");
+  const token = storedAuth ? JSON.parse(storedAuth).token : null;
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`; // note as crases
   }
   return config;
 });

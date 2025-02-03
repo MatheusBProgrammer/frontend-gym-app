@@ -1,7 +1,9 @@
 import { useContext, useEffect, useState } from "react";
+import { useSpring, animated } from "react-spring";
 import { AuthContext } from "../context/AuthContext";
 import AlunoContext from "../context/AlunoContext";
 import api from "../api";
+
 import "../styles/HomePage.css";
 import AddAlunoSection from "../components/homepage/AddAlunoSection";
 import GerenciarAlunosSection from "../components/homepage/GerenciarAlunosSection";
@@ -9,8 +11,11 @@ import GerenciarAlunosSection from "../components/homepage/GerenciarAlunosSectio
 function HomePage() {
   const { logout } = useContext(AuthContext);
   const { alunos, fetchAlunos } = useContext(AlunoContext);
+
   const [profile, setProfile] = useState(null);
   const [showAddAluno, setShowAddAluno] = useState(false);
+
+  // Form para cadastro de aluno
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -20,6 +25,7 @@ function HomePage() {
     peso: "",
     objetivo: "ganho de massa muscular",
   });
+
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -37,6 +43,26 @@ function HomePage() {
     fetchAlunos();
   }, [fetchAlunos]);
 
+  const handleLogout = () => {
+    logout();
+  };
+
+  /* =========== Animações React-Spring =========== */
+  // Animação para a seção de "Adicionar Aluno" (vem da esquerda)
+  const addAlunoSpring = useSpring({
+    from: { y: 300, opacity: 0 },
+    to: { y: 0, opacity: 1 },
+    config: { tension: 160, friction: 50 }, // Ajuste fino do "pull"/"bounce"
+  });
+
+  // Animação para a seção de "Gerenciar Alunos" (vem da direita)
+  const gerenciarAlunosSpring = useSpring({
+    from: { x: 150, opacity: 0 },
+    to: { x: 0, opacity: 1 },
+    config: { tension: 160, friction: 50 },
+  });
+
+  /* =========== CADASTRAR ALUNO =========== */
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -52,6 +78,8 @@ function HomePage() {
     try {
       await api.post("/api/aluno/register", formData);
       fetchAlunos();
+
+      // Reseta o form
       setFormData({
         nome: "",
         email: "",
@@ -61,6 +89,7 @@ function HomePage() {
         peso: "",
         objetivo: "ganho de massa muscular",
       });
+
       setShowAddAluno(false);
       setSuccessMessage("Aluno cadastrado com sucesso!");
       setTimeout(() => setSuccessMessage(""), 5000);
@@ -76,9 +105,31 @@ function HomePage() {
     }
   };
 
-  function handleLogout() {
-    logout();
-  }
+  /* =========== ATUALIZAR ALUNO =========== */
+  const updateAluno = async (updatedData) => {
+    try {
+      await api.put("/api/aluno/update", updatedData);
+      fetchAlunos();
+      setSuccessMessage("Aluno atualizado com sucesso!");
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (error) {
+      console.error("Erro ao atualizar aluno:", error);
+      setError("Ocorreu um erro ao atualizar o aluno. Tente novamente.");
+    }
+  };
+
+  /* =========== DELETAR ALUNO =========== */
+  const deleteAluno = async (id) => {
+    try {
+      await api.delete(`/api/aluno/${id}`);
+      fetchAlunos();
+      setSuccessMessage("Aluno excluído com sucesso!");
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (error) {
+      console.error("Erro ao excluir aluno:", error);
+      setError("Ocorreu um erro ao excluir o aluno. Tente novamente.");
+    }
+  };
 
   return (
     <div className="wrapper">
@@ -93,17 +144,27 @@ function HomePage() {
         )}
 
         <div className="dashboard-container">
-          <AddAlunoSection
-            showAddAluno={showAddAluno}
-            setShowAddAluno={setShowAddAluno}
-            formData={formData}
-            handleInputChange={handleInputChange}
-            handleSubmit={handleSubmit}
-            error={error}
-            successMessage={successMessage}
-          />
+          {/* Caixa de Adicionar Aluno animada vindo da ESQUERDA */}
+          <animated.div style={addAlunoSpring}>
+            <AddAlunoSection
+              showAddAluno={showAddAluno}
+              setShowAddAluno={setShowAddAluno}
+              formData={formData}
+              handleInputChange={handleInputChange}
+              handleSubmit={handleSubmit}
+              error={error}
+              successMessage={successMessage}
+            />
+          </animated.div>
 
-          <GerenciarAlunosSection alunos={alunos} />
+          {/* Caixa de Gerenciar Alunos animada vindo da DIREITA */}
+          <animated.div style={gerenciarAlunosSpring}>
+            <GerenciarAlunosSection
+              alunos={alunos}
+              updateAluno={updateAluno}
+              deleteAluno={deleteAluno}
+            />
+          </animated.div>
         </div>
       </div>
     </div>

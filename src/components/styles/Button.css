@@ -1,86 +1,82 @@
-/* Button.css */
-.button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+.btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    color 0.3s ease;
+  background-color: transparent;
 }
 
-.button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.btn .btn-text {
+  margin-left: 4px;
 }
 
-/* Primary Variant */
-.button.primary {
-  background: #3b82f6;
-  color: white;
+/* Estilo padrão */
+.btn-default {
+  border-color: #333;
+  color: #333;
 }
 
-.button.primary:hover {
-  background: #2563eb;
+.btn-default:hover {
+  background-color: #333;
+  color: #fff;
 }
 
-/* Outline Variant */
-.button.outline {
-  background: transparent;
-  border: 2px solid #3b82f6;
-  color: #3b82f6;
+/* Estilo primário */
+.btn-primary {
+  border-color: #0052cc;
+  background-color: #0052cc;
+  color: #fff;
 }
 
-.button.outline:hover {
-  background: #eff6ff;
+.btn-primary:hover {
+  background-color: #003d99;
+  border-color: #003d99;
 }
 
-/* Danger Variant */
-.button.danger {
-  background: #ef4444;
-  color: white;
+/* Estilo de alerta/danger */
+.btn-danger {
+  border-color: #d32f2f;
+  background-color: #d32f2f;
+  color: #fff;
 }
 
-.button.danger:hover {
-  background: #dc2626;
+.btn-danger:hover {
+  background-color: #b71c1c;
+  border-color: #b71c1c;
 }
 
-/* Icon Button */
-.button.icon {
-  padding: 0.5rem;
+/* Estilo outline (borda e texto) */
+.btn-outline {
+  border-color: #333;
+  color: #333;
+}
+
+.btn-outline:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+/* Loader */
+.loader {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #333;
   border-radius: 50%;
-}
-
-.button.icon svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Loading State */
-.button.loading {
-  position: relative;
-  pointer-events: none;
-}
-
-.button.loading::after {
-  content: "";
-  display: block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid white;
-  border-radius: 50%;
-  border-top-color: transparent;
+  width: 14px;
+  height: 14px;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
     transform: rotate(360deg);
   }
-}
-.button.primary svg,
-.button.danger svg {
-  fill: white;
 }

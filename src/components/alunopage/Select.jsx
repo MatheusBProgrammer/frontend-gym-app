@@ -1,19 +1,24 @@
 import React from "react";
 import "../styles/Select.css";
 
-const Select = ({ label, options, ...props }) => {
+function Select({ label, value, onChange, options, ...rest }) {
   return (
     <div className="select-group">
-      {label && <label>{label}</label>}
-      <select {...props}>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
+      {label && <label className="select-label">{label}</label>}
+      <select
+        value={value}
+        onChange={onChange}
+        className="select-field"
+        {...rest}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
           </option>
         ))}
       </select>
     </div>
   );
-};
+}
 
 export default Select;
