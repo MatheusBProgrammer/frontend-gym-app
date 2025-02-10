@@ -1,31 +1,40 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 1) Importar useNavigate
-import "./styles/GerenciarAlunosSection.css"; // Seu arquivo de estilos
+import { useNavigate } from "react-router-dom";
+import "./styles/AlunoCard.css";
 
-const AlunoCard = ({ aluno, updateAluno, deleteAluno }) => {
-  const navigate = useNavigate(); // 2) Inicializar o hook
+const AlunoCard = ({ aluno, updateAluno, deleteAluno, updateMedidasAluno }) => {
+  const navigate = useNavigate();
 
+  // Modal Editar Informações (já existente)
   const [showEditModal, setShowEditModal] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
+
+  // Modal Atualizar Medidas (NOVO)
+  const [showMedidasModal, setShowMedidasModal] = useState(false);
+
+  // Estado usado no modal de editar informações
   const [alunoEdit, setAlunoEdit] = useState({
     id: aluno._id,
     genero: aluno.genero,
     objetivo: aluno.objetivo,
-    senha: "", // A senha só será alterada se o usuário preencher esse campo.
+    // senha:  // Se quiser permitir trocar senha, incluir aqui
   });
 
-  // 3) Função para navegar ao clicar no card
-  const handleCardClick = () => {
-    navigate(`/aluno/${aluno._id}`);
-  };
+  // Estado usado no modal de atualizar medidas
+  const [medidasForm, setMedidasForm] = useState({
+    peso: aluno.medidasAtuais?.peso || "",
+    altura: aluno.medidasAtuais?.altura || "",
+    circunferenciaAbdominal: aluno.medidasAtuais?.circunferenciaAbdominal || "",
+    circunferenciaQuadril: aluno.medidasAtuais?.circunferenciaQuadril || "",
+    percentualGordura: aluno.medidasAtuais?.percentualGordura || "",
+    massaMuscular: aluno.medidasAtuais?.massaMuscular || "",
+  });
 
-  // 4) Impedir a propagação de clique nos botões
+  // Handlers para abrir/fechar modais
+  const handleCardClick = () => navigate(`/aluno/${aluno._id}`);
   const handleEditClick = (e) => {
     e.stopPropagation();
     setShowEditModal(true);
   };
-
   const handleDeleteClick = (e) => {
     e.stopPropagation();
     if (window.confirm("Deseja realmente excluir este aluno?")) {
@@ -33,54 +42,63 @@ const AlunoCard = ({ aluno, updateAluno, deleteAluno }) => {
     }
   };
 
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setAlunoEdit({ ...alunoEdit, [name]: value });
-    if (name === "senha") {
-      setPasswordError("");
-    }
+  // NOVO: abre modal de medidas
+  const handleUpdateMedidasClick = (e) => {
+    e.stopPropagation();
+    setShowMedidasModal(true);
   };
 
+  // Atualização dos campos no modal de editar informações
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setAlunoEdit((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Atualização dos campos no modal de atualizar medidas
+  const handleMedidasChange = (e) => {
+    const { name, value } = e.target;
+    setMedidasForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Quando submeter o modal de editar informações
   const handleEditSubmit = (e) => {
     e.preventDefault();
-
-    // Validação da senha se ela estiver preenchida
-    if (alunoEdit.senha !== "") {
-      if (alunoEdit.senha.length < 6) {
-        setPasswordError("* A senha deve ter no mínimo 6 caracteres.");
-        return;
-      }
-      if (!/[0-9]/.test(alunoEdit.senha)) {
-        setPasswordError("* A senha deve conter pelo menos um número.");
-        return;
-      }
-      if (!/[a-z]/.test(alunoEdit.senha)) {
-        setPasswordError(
-          "* A senha deve conter pelo menos uma letra minúscula."
-        );
-        return;
-      }
-      if (!/[A-Z]/.test(alunoEdit.senha)) {
-        setPasswordError(
-          "* A senha deve conter pelo menos uma letra maiúscula."
-        );
-        return;
-      }
-      if (!/[\W_]/.test(alunoEdit.senha)) {
-        setPasswordError(
-          "* A senha deve conter pelo menos um caractere especial."
-        );
-        return;
-      }
-    }
-
     updateAluno(alunoEdit);
     setShowEditModal(false);
   };
 
+  // Quando submeter o modal de atualizar medidas
+  const handleMedidasSubmit = async (e) => {
+    e.preventDefault();
+
+    // Converte os valores para números, ou deixa undefined se estiverem vazios
+    const medidasData = {
+      peso: medidasForm.peso ? Number(medidasForm.peso) : undefined,
+      altura: medidasForm.altura ? Number(medidasForm.altura) : undefined,
+      circunferenciaAbdominal: medidasForm.circunferenciaAbdominal
+        ? Number(medidasForm.circunferenciaAbdominal)
+        : undefined,
+      circunferenciaQuadril: medidasForm.circunferenciaQuadril
+        ? Number(medidasForm.circunferenciaQuadril)
+        : undefined,
+      percentualGordura: medidasForm.percentualGordura
+        ? Number(medidasForm.percentualGordura)
+        : undefined,
+      massaMuscular: medidasForm.massaMuscular
+        ? Number(medidasForm.massaMuscular)
+        : undefined,
+    };
+
+    try {
+      await updateMedidasAluno(aluno._id, medidasData);
+      setShowMedidasModal(false);
+    } catch (error) {
+      console.error("Erro ao atualizar medidas do aluno:", error);
+    }
+  };
+
   return (
     <>
-      {/* 3) Ao clicar no card inteiro, navega para /aluno/:id */}
       <div className="aluno-card" onClick={handleCardClick}>
         <h4>{aluno.nome}</h4>
         <p>
@@ -90,44 +108,45 @@ const AlunoCard = ({ aluno, updateAluno, deleteAluno }) => {
           <strong>Gênero:</strong> {aluno.genero}
         </p>
         <p>
-          <strong>Altura:</strong> {aluno.altura}m
+          <strong>Altura:</strong>{" "}
+          {aluno.medidasAtuais?.altura
+            ? `${aluno.medidasAtuais.altura} m`
+            : "Não informado"}
         </p>
         <p>
-          <strong>Peso:</strong> {aluno.peso}kg
+          <strong>Peso:</strong>{" "}
+          {aluno.medidasAtuais?.peso
+            ? `${aluno.medidasAtuais.peso} kg`
+            : "Não informado"}
         </p>
         <p>
           <strong>Objetivo:</strong> {aluno.objetivo}
         </p>
-
         <div className="actions-row">
-          {/* 4) Prevenir que o clique suba para o onClick do card */}
+          {/* Botão que abre o novo modal de medidas */}
+          <button
+            className="updateMedidasButton"
+            onClick={handleUpdateMedidasClick}
+          >
+            Atualizar medidas
+          </button>
+
           <button className="editAlunoButton" onClick={handleEditClick}>
             Editar
           </button>
+
           <button className="deleteAlunoButton" onClick={handleDeleteClick}>
             Excluir
           </button>
         </div>
       </div>
 
-      {/* Modal de edição */}
+      {/* Modal de Editar Dados (já existente) */}
       {showEditModal && (
         <div className="modal-overlay">
           <div className="modal">
             <h2>Editar Aluno</h2>
             <form onSubmit={handleEditSubmit}>
-              <label htmlFor="genero">Gênero:</label>
-              <select
-                id="genero"
-                name="genero"
-                value={alunoEdit.genero}
-                onChange={handleEditInputChange}
-              >
-                <option value="feminino">Feminino</option>
-                <option value="masculino">Masculino</option>
-                <option value="outro">Outro</option>
-              </select>
-
               <label htmlFor="objetivo">Objetivo:</label>
               <select
                 id="objetivo"
@@ -144,53 +163,15 @@ const AlunoCard = ({ aluno, updateAluno, deleteAluno }) => {
                 </option>
               </select>
 
+              {/* Se quiser trocar a senha, basta reabilitar este campo 
               <label htmlFor="senha">Nova Senha (opcional):</label>
-              <div className="password-input-container">
-                <input
-                  id="senha"
-                  name="senha"
-                  type={passwordVisible ? "text" : "password"}
-                  placeholder="Digite nova senha"
-                  value={alunoEdit.senha}
-                  onChange={handleEditInputChange}
-                />
-                <span
-                  className="toggle-password"
-                  onClick={() => setPasswordVisible(!passwordVisible)}
-                  style={{
-                    marginLeft: "8px",
-                  }} // Adicione esta linha
-                >
-                  {passwordVisible ? (
-                    <svg
-                      className="olho-senha"
-                      xmlns="http://www.w3.org/2000/svg"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      width="20"
-                      fill="#333"
-                    >
-                      <path d="M0 0h24v24H0z" fill="none" />
-                      <path d="M12 6a9.77 9.77 0 018.94 6 9.77 9.77 0 01-17.88 0A9.77 9.77 0 0112 6m0-2C6.48 4 1.73 7.11 0 12c1.73 4.89 6.48 8 12 8s10.27-3.11 12-8c-1.73-4.89-6.48-8-12-8zm0 5a3 3 0 013 3 3 3 0 01-3 3 3 3 0 01-3-3 3 3 0 013-3z" />
-                    </svg>
-                  ) : (
-                    // Ícone de "olho aberto"
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      width="20"
-                      fill="#333"
-                    >
-                      <path d="M0 0h24v24H0z" fill="none" />
-                      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5 5 0 9.27-3.11 11-7.5-1.73-4.39-6-7.5-11-7.5zm0 5a3 3 0 110 6 3 3 0 010-6z" />
-                    </svg>
-                  )}
-                </span>
-              </div>
-              {passwordError && (
-                <p className="error-message">{passwordError}</p>
-              )}
+              <input
+                type="password"
+                name="senha"
+                id="senha"
+                onChange={handleEditInputChange}
+              />
+              */}
 
               <div className="modal-actions">
                 <button type="submit" className="confirmEditButton">
@@ -200,6 +181,93 @@ const AlunoCard = ({ aluno, updateAluno, deleteAluno }) => {
                   type="button"
                   className="cancelEditButton"
                   onClick={() => setShowEditModal(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Atualizar Medidas (NOVO) */}
+      {showMedidasModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Atualizar Medidas</h2>
+            <form onSubmit={handleMedidasSubmit}>
+              <label htmlFor="peso">Peso (kg):</label>
+              <input
+                id="peso"
+                name="peso"
+                type="number"
+                step="0.1"
+                value={medidasForm.peso}
+                onChange={handleMedidasChange}
+                required
+              />
+
+              <label htmlFor="altura">Altura (m):</label>
+              <input
+                id="altura"
+                name="altura"
+                type="number"
+                step="0.01"
+                value={medidasForm.altura}
+                onChange={handleMedidasChange}
+                required
+              />
+
+              <label htmlFor="circunferenciaAbdominal">
+                Circ. Abdominal (cm):
+              </label>
+              <input
+                id="circunferenciaAbdominal"
+                name="circunferenciaAbdominal"
+                type="number"
+                step="0.1"
+                value={medidasForm.circunferenciaAbdominal}
+                onChange={handleMedidasChange}
+              />
+
+              <label htmlFor="circunferenciaQuadril">Circ. Quadril (cm):</label>
+              <input
+                id="circunferenciaQuadril"
+                name="circunferenciaQuadril"
+                type="number"
+                step="0.1"
+                value={medidasForm.circunferenciaQuadril}
+                onChange={handleMedidasChange}
+              />
+
+              <label htmlFor="percentualGordura">% Gordura (%):</label>
+              <input
+                id="percentualGordura"
+                name="percentualGordura"
+                type="number"
+                step="0.1"
+                value={medidasForm.percentualGordura}
+                onChange={handleMedidasChange}
+              />
+
+              <label htmlFor="massaMuscular">Massa Muscular (kg):</label>
+              <input
+                id="massaMuscular"
+                name="massaMuscular"
+                type="number"
+                step="0.1"
+                value={medidasForm.massaMuscular}
+                onChange={handleMedidasChange}
+              />
+
+              <div className="modal-actions">
+                <button type="submit" className="confirmEditButton">
+                  Salvar
+                </button>
+                <button
+                  type="button"
+                  className="cancelEditButton"
+                  onClick={() => setShowMedidasModal(false)}
                 >
                   Cancelar
                 </button>

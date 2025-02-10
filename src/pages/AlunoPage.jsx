@@ -8,9 +8,40 @@ import Input from "../components/alunopage/Input";
 import Select from "../components/alunopage/Select";
 import "../styles/AlunoPage.css";
 
-// 1. Array com os grupos musculares pré-definidos:
+// Importações para os gráficos e registro dos componentes do Chart.js
+import { Line, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+// Função auxiliar para capitalizar a primeira letra de uma string
+const capitalizeFirstLetter = (string) => {
+  if (!string) return "";
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+// Array com os grupos musculares pré-definidos
 const grupoMuscularOptions = [
-  { value: "peitoral", label: "Peitoral" },
+  { value: "peito", label: "Peitoral" },
   { value: "costas", label: "Costas" },
   { value: "ombros", label: "Ombros" },
   { value: "biceps", label: "Bíceps" },
@@ -28,10 +59,15 @@ const grupoMuscularOptions = [
   { value: "antebracos", label: "Antebraços" },
 ];
 
-// 2. Importações do Chart.js
-import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
-ChartJS.register(ArcElement, Tooltip, Legend, Title);
+// Array com as opções de métricas para o gráfico de evolução
+const metricsOptions = [
+  { value: "peso", label: "Peso (kg)" },
+  { value: "altura", label: "Altura" },
+  { value: "circunferenciaAbdominal", label: "Circ. Abdominal (cm)" },
+  { value: "circunferenciaQuadril", label: "Circ. Quadril (cm)" },
+  { value: "percentualGordura", label: "Percentual de Gordura (%)" },
+  { value: "massaMuscular", label: "Massa Muscular (kg)" },
+];
 
 function AlunoPage() {
   const { id } = useParams();
@@ -44,8 +80,30 @@ function AlunoPage() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // Estado para controlar exibição do gráfico
+  // Estados para exibir os gráficos
   const [showChart, setShowChart] = useState(false);
+  const [showEvolucao, setShowEvolucao] = useState(false);
+  const [historicoMedidas, setHistoricoMedidas] = useState([]);
+
+  // Função para buscar o histórico de medidas (usando POST)
+  const fetchHistoricoMedidas = async () => {
+    try {
+      const response = await api.post(`/api/aluno/medidas/historico/${id}`, {
+        alunoId: id,
+      });
+      setHistoricoMedidas(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar histórico de medidas:", error);
+    }
+  };
+
+  // Alterna a exibição do gráfico de evolução e busca os dados se necessário
+  const handleToggleEvolucao = () => {
+    if (!showEvolucao) {
+      fetchHistoricoMedidas();
+    }
+    setShowEvolucao(!showEvolucao);
+  };
 
   // Estados para formulários
   const emptyTreino = { grupoMuscular: "", observacoes: "" };
@@ -97,7 +155,7 @@ function AlunoPage() {
     }
   };
 
-  // Operações com rotinas
+  // Operações com rotinas, treinos e exercícios
   const handleCreateRotina = () =>
     handleCRUD(api.post, `/api/aluno/rotina/${id}`);
   const handleDeleteRotinas = () =>
@@ -109,16 +167,12 @@ function AlunoPage() {
       alunoId: id,
       rotinaId,
     });
-
-  // Operações com treinos
   const handleTreinoAction = (rotinaId, treinoId = null, data) => {
     const baseEndpoint = `/api/aluno/rotina/${id}/${rotinaId}/treinos`;
     const method = treinoId ? api.put : api.post;
     const endpoint = treinoId ? `${baseEndpoint}/${treinoId}` : baseEndpoint;
     return handleCRUD(method, endpoint, data);
   };
-
-  // Operações com exercícios
   const handleExercicioAction = (
     rotinaId,
     treinoId,
@@ -132,8 +186,6 @@ function AlunoPage() {
       : baseEndpoint;
     return handleCRUD(method, endpoint, data);
   };
-
-  // Deletar treino ou exercício
   const handleDelete = (type, ids) => {
     const endpoints = {
       treino: `/api/aluno/rotina/${id}/${ids.rotinaId}/treinos/${ids.treinoId}`,
@@ -142,32 +194,29 @@ function AlunoPage() {
     return handleCRUD(api.delete, endpoints[type]);
   };
 
-  // Se não carregou ainda, exibe "Carregando"
   if (!aluno) return <div className="loading">Carregando...</div>;
 
-  // 3. Função para calcular a contagem de exercícios em cada grupo muscular
+  // Função para calcular a distribuição de exercícios por grupo muscular (para o Pie Chart)
   const computeMuscleGroupDistribution = () => {
-    const distribution = {}; // Ex: { peitoral: 3, costas: 8, ... }
-
-    // Percorre cada rotina
-    aluno.rotinas.forEach((rotina) => {
-      // Dentro de cada rotina, percorre cada treino
-      rotina.treinos.forEach((treino) => {
-        const group = treino.grupoMuscular;
-        // Soma a quantidade de exercícios APENAS se houver pelo menos 1 exercício
-        if (group && treino.exercicios.length > 0) {
-          distribution[group] =
-            (distribution[group] || 0) + treino.exercicios.length;
+    const distribution = {};
+    if (aluno.rotinas && Array.isArray(aluno.rotinas)) {
+      aluno.rotinas.forEach((rotina) => {
+        if (rotina.treinos && Array.isArray(rotina.treinos)) {
+          rotina.treinos.forEach((treino) => {
+            const group = treino.grupoMuscular;
+            if (group && treino.exercicios && treino.exercicios.length > 0) {
+              distribution[group] =
+                (distribution[group] || 0) + treino.exercicios.length;
+            }
+          });
         }
       });
-    });
-
+    }
     return distribution;
   };
 
-  // 4. Gerar dados para o Pie Chart
   const muscleGroupData = computeMuscleGroupDistribution();
-  const chartData = {
+  const pieChartData = {
     labels: Object.keys(muscleGroupData),
     datasets: [
       {
@@ -196,7 +245,7 @@ function AlunoPage() {
     ],
   };
 
-  const chartOptions = {
+  const pieChartOptions = {
     responsive: true,
     plugins: {
       title: {
@@ -204,14 +253,71 @@ function AlunoPage() {
         text: "Gráfico de Exercícios por Grupo Muscular",
         font: { size: 12 },
       },
-      legend: {
-        position: "bottom",
-      },
+      legend: { position: "bottom" },
     },
-    animation: {
-      duration: 800,
+    animation: { duration: 800 },
+  };
+
+  // Preparando dados para o gráfico de evolução (Line Chart)
+  const historicoMedidasSorted = [...historicoMedidas].sort(
+    (a, b) => new Date(a.data) - new Date(b.data)
+  );
+
+  // Cores definidas para cada métrica (na mesma ordem de metricsOptions)
+  const datasetColors = [
+    {
+      borderColor: "rgba(75,192,192,1)",
+      backgroundColor: "rgba(75,192,192,0.2)",
+    },
+    {
+      borderColor: "rgba(255,99,132,1)",
+      backgroundColor: "rgba(255,99,132,0.2)",
+    },
+    {
+      borderColor: "rgba(54,162,235,1)",
+      backgroundColor: "rgba(54,162,235,0.2)",
+    },
+    {
+      borderColor: "rgba(255,206,86,1)",
+      backgroundColor: "rgba(255,206,86,0.2)",
+    },
+    {
+      borderColor: "rgba(153,102,255,1)",
+      backgroundColor: "rgba(153,102,255,0.2)",
+    },
+    {
+      borderColor: "rgba(255,159,64,1)",
+      backgroundColor: "rgba(255,159,64,0.2)",
+    },
+  ];
+
+  const evolutionChartData = {
+    labels: historicoMedidasSorted.map((item) =>
+      new Date(item.data).toLocaleDateString()
+    ),
+    datasets: metricsOptions.map((metric, index) => ({
+      label: metric.label,
+      data: historicoMedidasSorted.map((item) => item.medidas[metric.value]),
+      borderColor: datasetColors[index].borderColor,
+      backgroundColor: datasetColors[index].backgroundColor,
+      fill: false,
+      tension: 0.1,
+    })),
+  };
+
+  const evolutionChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+      title: { display: true, text: "Evolução das Medidas" },
     },
   };
+
+  // Cria um array de opções para o select de treino com placeholder
+  const grupoMuscularOptionsWithPlaceholder = [
+    { value: "", label: "Selecione o Grupo Muscular", disabled: true },
+    ...grupoMuscularOptions,
+  ];
 
   return (
     <div className="aluno-page">
@@ -221,17 +327,39 @@ function AlunoPage() {
           ← Voltar
         </button>
         <h1>{aluno.nome}</h1>
-
-        {/* 5. Botão para exibir/ocultar o gráfico */}
         <Button variant="outline" onClick={() => setShowChart(!showChart)}>
           {showChart ? "Ocultar Gráfico" : "Ver Gráfico"}
         </Button>
+        <Button variant="outline" onClick={handleToggleEvolucao}>
+          {showEvolucao ? "Ocultar Evolução" : "Ver Evolução"}
+        </Button>
       </header>
 
-      {/* 6. Mostrar gráfico se showChart for true */}
+      {/* Gráfico de Exercícios por Grupo Muscular (Pie Chart) */}
       {showChart && (
-        <div className="chart-container">
-          <Pie data={chartData} options={chartOptions} />
+        <div
+          className="chart-container"
+          style={{ height: "500px", width: "100%" }}
+        >
+          <Pie data={pieChartData} options={pieChartOptions} />
+        </div>
+      )}
+
+      {/* Gráfico de Evolução das Medidas (Line Chart) */}
+      {showEvolucao && historicoMedidas.length > 0 && (
+        <div
+          className="chart-container"
+          style={{ height: "500px", width: "100%" }}
+        >
+          <Line data={evolutionChartData} options={evolutionChartOptions} />
+        </div>
+      )}
+      {showEvolucao && historicoMedidas.length === 0 && (
+        <div
+          className="chart-container"
+          style={{ height: "500px", width: "100%" }}
+        >
+          <p>Não há dados de evolução disponíveis.</p>
         </div>
       )}
 
@@ -267,11 +395,16 @@ function AlunoPage() {
         {aluno.rotinas.length === 0 ? (
           <p className="empty">Nenhuma rotina cadastrada.</p>
         ) : (
-          aluno.rotinas.map((rotina) => (
+          aluno.rotinas.map((rotina, index) => (
             <div key={rotina._id} className="rotina">
               <div className="rotina-header">
+                {/* 
+                  Aqui é aplicado o nome automático da rotina com uma sequência alfabética,
+                  baseada no índice (A para o primeiro, B para o segundo, etc.)
+                */}
                 <h3>
-                  Rotina de {new Date(rotina.createdAt).toLocaleDateString()}
+                  Rotina {String.fromCharCode(65 + index)} -{" "}
+                  {new Date(rotina.createdAt).toLocaleDateString()}
                 </h3>
                 <div className="rotina-actions">
                   <Button
@@ -292,12 +425,15 @@ function AlunoPage() {
                   </Button>
                 </div>
               </div>
-
               {rotina.treinos.map((treino) => (
                 <div key={treino._id} className="treino">
                   <div className="treino-header">
-                    {/* Exibimos o grupoMuscular escolhido */}
-                    <h4>{treino.grupoMuscular}</h4>
+                    {/* Aqui aplicamos a capitalização para o grupo muscular */}
+                    <h4>
+                      {treino.grupoMuscular
+                        ? capitalizeFirstLetter(treino.grupoMuscular)
+                        : "Sem grupo definido"}
+                    </h4>
                     <div className="treino-actions">
                       <Button
                         onClick={() => {
@@ -326,12 +462,12 @@ function AlunoPage() {
                     </div>
                   </div>
                   <p className="observacoes">{treino.observacoes}</p>
-
                   <div className="exercicios">
                     {treino.exercicios.map((exercicio) => (
                       <div key={exercicio._id} className="exercicio">
                         <div className="exercicio-info">
-                          <h5>{exercicio.nome}</h5>
+                          {/* Capitaliza o nome do exercício na exibição */}
+                          <h5>{capitalizeFirstLetter(exercicio.nome)}</h5>
                           <p>Tipo: {exercicio.tipo}</p>
                           <p>
                             {exercicio.series}x{exercicio.repeticoes}
@@ -392,7 +528,7 @@ function AlunoPage() {
         )}
       </section>
 
-      {/* Modais */}
+      {/* Modal para Nova Rotina */}
       <Modal
         isOpen={modalType === "nova_rotina"}
         onClose={() => setModalType(null)}
@@ -413,6 +549,7 @@ function AlunoPage() {
         </div>
       </Modal>
 
+      {/* Modal para Novo/Editar Treino */}
       <Modal
         isOpen={modalType && modalType.includes("treino")}
         onClose={() => setModalType(null)}
@@ -422,16 +559,14 @@ function AlunoPage() {
             : "Novo Treino"
         }
       >
-        {/* Campo de Grupo Muscular usando Select */}
         <Select
           label="Grupo Muscular"
           value={formData.grupoMuscular || ""}
           onChange={(e) =>
             setFormData({ ...formData, grupoMuscular: e.target.value })
           }
-          options={grupoMuscularOptions}
+          options={grupoMuscularOptionsWithPlaceholder}
         />
-
         <Input
           label="Observações"
           type="textarea"
@@ -460,6 +595,7 @@ function AlunoPage() {
         </div>
       </Modal>
 
+      {/* Modal para Novo/Editar Exercício */}
       <Modal
         isOpen={modalType && modalType.includes("exercicio")}
         onClose={() => setModalType(null)}
@@ -473,6 +609,13 @@ function AlunoPage() {
           label="Nome do Exercício"
           value={formData.nome || ""}
           onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+          // Ao perder o foco, transforma a primeira letra em maiúscula
+          onBlur={() =>
+            setFormData({
+              ...formData,
+              nome: capitalizeFirstLetter(formData.nome),
+            })
+          }
         />
         <Select
           label="Tipo"

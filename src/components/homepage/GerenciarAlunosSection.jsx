@@ -2,7 +2,16 @@ import React from "react";
 import AlunoCard from "./AlunoCard";
 import "./styles/GerenciarAlunosSection.css";
 
-const GerenciarAlunosSection = ({ alunos, updateAluno, deleteAluno }) => {
+/**
+ * Componente responsável por renderizar a lista de alunos
+ * e passar as funções de update/delete para cada AlunoCard.
+ */
+const GerenciarAlunosSection = ({
+  alunos,
+  updateAluno,
+  deleteAluno,
+  updateMedidasAluno,
+}) => {
   return (
     <div className="section gerenciar-alunos">
       <h3>Gerenciar Alunos</h3>
@@ -15,6 +24,7 @@ const GerenciarAlunosSection = ({ alunos, updateAluno, deleteAluno }) => {
               aluno={aluno}
               updateAluno={updateAluno}
               deleteAluno={deleteAluno}
+              updateMedidasAluno={updateMedidasAluno} // <-- repassa aqui
             />
           ))
         ) : (

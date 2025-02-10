@@ -130,6 +130,22 @@ function HomePage() {
       setError("Ocorreu um erro ao excluir o aluno. Tente novamente.");
     }
   };
+  /* =========== ATUALIZAR MEDIDAS DE ALUNO =========== */
+  const updateMedidasAluno = async (alunoId, novasMedidas) => {
+    try {
+      // Agora a URL inclui o alunoId como parâmetro
+      await api.put(`/api/aluno/medidas/${alunoId}`, novasMedidas);
+      fetchAlunos();
+      setSuccessMessage("Medidas atualizadas com sucesso!");
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (error) {
+      console.error("Erro ao atualizar medidas do aluno:", error);
+      setError(
+        "Ocorreu um erro ao atualizar as medidas do aluno. Tente novamente."
+      );
+    }
+  };
+  // ...
 
   return (
     <div className="wrapper">
@@ -163,6 +179,7 @@ function HomePage() {
               alunos={alunos}
               updateAluno={updateAluno}
               deleteAluno={deleteAluno}
+              updateMedidasAluno={updateMedidasAluno}
             />
           </animated.div>
         </div>

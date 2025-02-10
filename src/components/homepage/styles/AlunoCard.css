@@ -32,6 +32,21 @@
   color: #333;
 }
 
+.updateMedidasButton {
+  background-color: #ff4757; /* Vermelho mais moderno */
+  color: white; /* Garante que o texto seja visível */
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.updateMedidasButton:hover {
+  background-color: #ff6b81; /* Tom mais claro no hover */
+  transform: translateY(-2px);
+}
+
 /* Ações (botões de Editar/Excluir) */
 .actions-row {
   display: flex;

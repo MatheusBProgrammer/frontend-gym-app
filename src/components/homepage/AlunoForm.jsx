@@ -1,3 +1,4 @@
+// src/components/AlunoForm.jsx
 import "./styles/AlunoForm.css";
 
 const AlunoForm = ({
@@ -16,6 +17,7 @@ const AlunoForm = ({
         onChange={handleInputChange}
         required
       />
+
       <input
         type="email"
         name="email"
@@ -24,6 +26,7 @@ const AlunoForm = ({
         onChange={handleInputChange}
         required
       />
+
       <input
         type="password"
         name="senha"
@@ -44,24 +47,46 @@ const AlunoForm = ({
         <option value="outro">Outro</option>
       </select>
 
+      {/* MEDIDAS */}
       <input
         type="number"
         name="altura"
         step="0.01"
-        placeholder="Altura (m)"
+        placeholder="Altura (cm)"
         value={formData.altura}
         onChange={handleInputChange}
         required
       />
+
       <input
         type="number"
         name="peso"
+        step="1"
         placeholder="Peso (kg)"
         value={formData.peso}
         onChange={handleInputChange}
         required
       />
 
+      <input
+        type="number"
+        name="circunferenciaAbdominal"
+        step="1"
+        placeholder="Abdominal (cm)"
+        value={formData.circunferenciaAbdominal}
+        onChange={handleInputChange}
+      />
+
+      <input
+        type="number"
+        name="circunferenciaQuadril"
+        step="1"
+        placeholder="Quadril (cm)"
+        value={formData.circunferenciaQuadril}
+        onChange={handleInputChange}
+      />
+
+      {/* OBJETIVO */}
       <select
         name="objetivo"
         value={formData.objetivo}
@@ -72,6 +97,18 @@ const AlunoForm = ({
         <option value="perda de peso">Perda de Peso</option>
         <option value="manutenção">Manutenção</option>
       </select>
+
+      {/* MOSTRAR CAMPOS CALCULADOS (opcional) */}
+      {formData.percentualGordura && (
+        <div>
+          <label>Percentual de Gordura: {formData.percentualGordura}%</label>
+        </div>
+      )}
+      {formData.massaMuscular && (
+        <div>
+          <label>Massa Muscular: {formData.massaMuscular} kg</label>
+        </div>
+      )}
 
       <div className="form-buttons">
         <button type="submit" className="primary-button">
