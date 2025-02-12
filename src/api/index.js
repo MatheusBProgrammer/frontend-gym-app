@@ -2,8 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL:
-    "https://backend-gym-qnz2-git-main-matheusbprogrammers-projects.vercel.app",
+  baseURL: "https://backend-gym-chi.vercel.app",
 });
 
 api.interceptors.request.use((config) => {
