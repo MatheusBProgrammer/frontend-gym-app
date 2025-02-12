@@ -1,3 +1,4 @@
+// src/pages/HomePage.jsx
 import { useContext, useEffect, useState } from "react";
 import { useSpring, animated } from "react-spring";
 import { AuthContext } from "../context/AuthContext";
@@ -29,6 +30,16 @@ function HomePage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // Função auxiliar para extrair a mensagem de erro
+  const getErrorMessage = (error) => {
+    return (
+      error.response?.data?.message ||
+      error.response?.data?.msg ||
+      error.message ||
+      "Ocorreu um erro inesperado."
+    );
+  };
+
   useEffect(() => {
     async function fetchProfile() {
       try {
@@ -48,14 +59,12 @@ function HomePage() {
   };
 
   /* =========== Animações React-Spring =========== */
-  // Animação para a seção de "Adicionar Aluno" (vem da esquerda)
   const addAlunoSpring = useSpring({
     from: { y: 300, opacity: 0 },
     to: { y: 0, opacity: 1 },
-    config: { tension: 160, friction: 50 }, // Ajuste fino do "pull"/"bounce"
+    config: { tension: 160, friction: 50 },
   });
 
-  // Animação para a seção de "Gerenciar Alunos" (vem da direita)
   const gerenciarAlunosSpring = useSpring({
     from: { x: 150, opacity: 0 },
     to: { x: 0, opacity: 1 },
@@ -94,14 +103,8 @@ function HomePage() {
       setSuccessMessage("Aluno cadastrado com sucesso!");
       setTimeout(() => setSuccessMessage(""), 5000);
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data.msg === "Já existe um aluno com esse email"
-      ) {
-        setError("Este email já está cadastrado no sistema!");
-      } else {
-        setError("Ocorreu um erro ao cadastrar o aluno. Tente novamente.");
-      }
+      setError(getErrorMessage(error));
+      setTimeout(() => setError(""), 5000);
     }
   };
 
@@ -114,7 +117,8 @@ function HomePage() {
       setTimeout(() => setSuccessMessage(""), 5000);
     } catch (error) {
       console.error("Erro ao atualizar aluno:", error);
-      setError("Ocorreu um erro ao atualizar o aluno. Tente novamente.");
+      setError(getErrorMessage(error));
+      setTimeout(() => setError(""), 5000);
     }
   };
 
@@ -127,25 +131,24 @@ function HomePage() {
       setTimeout(() => setSuccessMessage(""), 5000);
     } catch (error) {
       console.error("Erro ao excluir aluno:", error);
-      setError("Ocorreu um erro ao excluir o aluno. Tente novamente.");
+      setError(getErrorMessage(error));
+      setTimeout(() => setError(""), 5000);
     }
   };
+
   /* =========== ATUALIZAR MEDIDAS DE ALUNO =========== */
   const updateMedidasAluno = async (alunoId, novasMedidas) => {
     try {
-      // Agora a URL inclui o alunoId como parâmetro
       await api.put(`/api/aluno/medidas/${alunoId}`, novasMedidas);
       fetchAlunos();
       setSuccessMessage("Medidas atualizadas com sucesso!");
       setTimeout(() => setSuccessMessage(""), 5000);
     } catch (error) {
       console.error("Erro ao atualizar medidas do aluno:", error);
-      setError(
-        "Ocorreu um erro ao atualizar as medidas do aluno. Tente novamente."
-      );
+      setError(getErrorMessage(error));
+      setTimeout(() => setError(""), 5000);
     }
   };
-  // ...
 
   return (
     <div className="wrapper">

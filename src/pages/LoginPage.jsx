@@ -22,23 +22,29 @@ function LoginPage() {
   const navigate = useNavigate();
   const containerRef = useRef(null);
 
+  // Função auxiliar para extrair a mensagem de erro
+  const getErrorMessage = (error) => {
+    return (
+      error.response?.data?.message ||
+      error.response?.data?.msg ||
+      error.message ||
+      "Falha no login. Tente novamente."
+    );
+  };
+
   async function handleLogin(e) {
     e.preventDefault();
     setError("");
 
     try {
-      // POST /api/professor/login
       const response = await api.post("/api/professor/login", { email, senha });
       const { _id, token } = response.data;
-
       const user = { _id, email };
       login(user, token);
-
-      // Dispara a animação de saída (fade-out)
       setIsLeaving(true);
     } catch (err) {
-      console.log("ERRO => ", err);
-      setError("Falha no login. Verifique as credenciais ou tente novamente.");
+      console.error("Erro no login:", err);
+      setError(getErrorMessage(err));
     }
   }
 
@@ -71,7 +77,6 @@ function LoginPage() {
           onChange={(e) => setSenha(e.target.value)}
           required
         />
-
         <PrimaryButton type="submit">Entrar</PrimaryButton>
       </AuthForm>
     </div>

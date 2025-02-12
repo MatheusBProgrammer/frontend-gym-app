@@ -1,7 +1,7 @@
-// src/components/AddAlunoSection.jsx
+// src/components/homepage/AddAlunoSection.jsx
 import React, { useEffect, useState } from "react";
 import "./styles/AddAlunoSection.css";
-import AlunoForm from "./AlunoForm";
+import AlunoForm from "../AlunoForm";
 
 const AddAlunoSection = ({
   showAddAluno,
@@ -9,7 +9,6 @@ const AddAlunoSection = ({
   error,
   successMessage,
 }) => {
-  // Estado inicial do formulário
   const initialFormData = {
     nome: "",
     email: "",
@@ -28,7 +27,7 @@ const AddAlunoSection = ({
   const [displayError, setDisplayError] = useState("");
   const [displaySuccess, setDisplaySuccess] = useState("");
 
-  // Atualiza o estado quando um erro ocorre e remove após 3 segundos
+  // Exibe e remove a mensagem de erro automaticamente
   useEffect(() => {
     if (error) {
       setDisplayError(error);
@@ -37,7 +36,7 @@ const AddAlunoSection = ({
     }
   }, [error]);
 
-  // Atualiza o estado quando uma mensagem de sucesso ocorre e remove após 3 segundos
+  // Exibe e remove a mensagem de sucesso automaticamente
   useEffect(() => {
     if (successMessage) {
       setDisplaySuccess(successMessage);
@@ -53,10 +52,8 @@ const AddAlunoSection = ({
    */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
-
       if (
         [
           "peso",
@@ -68,20 +65,15 @@ const AddAlunoSection = ({
         const peso = parseInt(newData.peso) || 0;
         const abd = parseInt(newData.circunferenciaAbdominal) || 0;
         const quad = parseInt(newData.circunferenciaQuadril) || 0;
-        const alturaCm = parseInt(newData.altura) || 0; // Altura em cm
-        const alturaMetros = alturaCm / 100; // Convertendo para metros
-
+        const alturaCm = parseInt(newData.altura) || 0;
+        const alturaMetros = alturaCm / 100;
         if (peso > 0 && abd > 0 && quad > 0 && alturaCm > 0) {
-          // Exemplo de cálculo usando altura (ajuste conforme sua fórmula real)
-          const imc = peso / (alturaMetros * alturaMetros); // Exemplo com IMC
-
-          // Fórmula dummy revisada (apenas exemplo)
+          const imc = peso / (alturaMetros * alturaMetros);
           const rcq = abd / quad;
           const percentualGordura = Math.round(rcq * 50);
           const massaMuscular = Math.round(
             peso * (1 - percentualGordura / 100)
           );
-
           newData.percentualGordura = String(percentualGordura);
           newData.massaMuscular = String(massaMuscular);
         } else {
@@ -89,16 +81,15 @@ const AddAlunoSection = ({
           newData.massaMuscular = "";
         }
       }
-
       return newData;
     });
   };
+
   /**
-   * handleSubmit: monta o objeto final e envia ao backend
+   * Monta o objeto final e envia ao backend
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const body = {
       nome: formData.nome,
       email: formData.email,
@@ -137,19 +128,15 @@ const AddAlunoSection = ({
       }
 
       console.log("Aluno cadastrado:", responseData);
-      setDisplaySuccess("Aluno cadastrado com sucesso!");
-
-      // Remover a mensagem de sucesso após 3 segundos
+      setDisplaySuccess(
+        responseData.message || "Aluno cadastrado com sucesso!"
+      );
       setTimeout(() => setDisplaySuccess(""), 3000);
-
-      // Resetar o formulário e fechar a seção
       setFormData(initialFormData);
       setShowAddAluno(false);
     } catch (err) {
       console.error("Erro no cadastro:", err);
       setDisplayError(err.message || "Erro ao conectar com o servidor.");
-
-      // Remover a mensagem de erro após 3 segundos
       setTimeout(() => setDisplayError(""), 3000);
     }
   };
