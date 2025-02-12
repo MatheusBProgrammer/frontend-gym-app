@@ -13,8 +13,8 @@ import PrimaryButton from "../components/authpage/PrimaryButton";
 import "../styles/LoginPage.css";
 
 function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [email, setEmail] = useState("administrador@adm.com");
+  const [senha, setSenha] = useState("12321Adm!");
   const [error, setError] = useState("");
   const [isLeaving, setIsLeaving] = useState(false);
 
