@@ -117,11 +117,14 @@ const AddAlunoSection = ({
     };
 
     try {
-      const response = await fetch("http://localhost:3000/api/aluno/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const response = await fetch(
+        "https://backend-gym-chi.vercel.app/api/aluno/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
 
       const contentType = response.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
