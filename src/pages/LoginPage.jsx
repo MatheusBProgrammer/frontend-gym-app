@@ -22,14 +22,24 @@ function LoginPage() {
   const navigate = useNavigate();
   const containerRef = useRef(null);
 
-  // Função auxiliar para extrair a mensagem de erro
+  // Função auxiliar para extrair e tratar a mensagem de erro
   const getErrorMessage = (error) => {
-    return (
-      error.response?.data?.message ||
-      error.response?.data?.msg ||
-      error.message ||
-      "Falha no login. Tente novamente."
-    );
+    if (error.response) {
+      // Caso retorne 404, exibe uma mensagem mais amigável
+      if (error.response.status === 404) {
+        return "Usuário ou senha incorretos.";
+      }
+      // Tenta extrair a mensagem do backend
+      if (error.response.data) {
+        if (error.response.data.message) {
+          return error.response.data.message;
+        }
+        if (error.response.data.msg) {
+          return error.response.data.msg;
+        }
+      }
+    }
+    return error.message || "Falha no login. Tente novamente.";
   };
 
   async function handleLogin(e) {
@@ -37,10 +47,13 @@ function LoginPage() {
     setError("");
 
     try {
+      // POST /api/professor/login
       const response = await api.post("/api/professor/login", { email, senha });
       const { _id, token } = response.data;
       const user = { _id, email };
       login(user, token);
+
+      // Dispara a animação de saída (fade-out)
       setIsLeaving(true);
     } catch (err) {
       console.error("Erro no login:", err);

@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { useSpring, animated } from "react-spring";
 import { AuthContext } from "../context/AuthContext";
 import AlunoContext from "../context/AlunoContext";
-import api from "../api";
+import api from "../api/index";
 
 import "../styles/HomePage.css";
 import AddAlunoSection from "../components/homepage/AddAlunoSection";

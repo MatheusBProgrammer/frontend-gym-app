@@ -1,7 +1,7 @@
 // src/components/homepage/AddAlunoSection.jsx
 import React, { useEffect, useState } from "react";
 import "./styles/AddAlunoSection.css";
-import AlunoForm from "../AlunoForm";
+import AlunoForm from "./AlunoForm";
 
 const AddAlunoSection = ({
   showAddAluno,
