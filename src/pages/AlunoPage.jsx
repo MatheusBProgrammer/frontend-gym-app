@@ -33,7 +33,7 @@ ChartJS.register(
   Legend
 );
 
-// Importa a lista de exercícios a partir do JSON atualizado
+// Importa a lista de exercícios a partir do JSON
 import exercicioList from "../utils/ExercicioList.json";
 
 // Função auxiliar para capitalizar a primeira letra de uma string
@@ -129,7 +129,8 @@ function AlunoPage() {
     series: 4,
     descanso: 90,
     observacoes: "",
-    video: "",
+    // Campo para a URL do vídeo do YouTube
+    videoUrl: "",
   };
 
   useEffect(() => {
@@ -495,9 +496,10 @@ function AlunoPage() {
                           {exercicio.observacoes && (
                             <p>Observações: {exercicio.observacoes}</p>
                           )}
-                          {exercicio.video && (
+                          {/* Link ou embed do vídeo */}
+                          {exercicio.videoUrl && (
                             <a
-                              href={exercicio.video}
+                              href={exercicio.videoUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
@@ -647,7 +649,7 @@ function AlunoPage() {
           options={exercicioGroupOptions}
         />
         {/* Se um grupo estiver selecionado, mostra a lista de exercícios
-            e atualiza automaticamente a URL do vídeo */}
+            e atualiza automaticamente a URL do vídeo do JSON para videoUrl */}
         {selectedGroup && (
           <Select
             label="Exercício"
@@ -660,7 +662,7 @@ function AlunoPage() {
               setFormData({
                 ...formData,
                 nome,
-                video: selectedExercise?.video || "",
+                videoUrl: selectedExercise?.video || "", // Se no JSON for "video"
               });
             }}
             options={exercicioList[selectedGroup].map((exercicio) => ({
@@ -714,16 +716,18 @@ function AlunoPage() {
         />
         <Input
           label="URL do Vídeo"
-          value={formData.video || ""}
-          onChange={(e) => setFormData({ ...formData, video: e.target.value })}
+          value={formData.videoUrl || ""}
+          onChange={(e) =>
+            setFormData({ ...formData, videoUrl: e.target.value })
+          }
         />
         {/* Se houver URL, exibe o preview */}
-        {formData.video && (
+        {formData.videoUrl && (
           <div className="video-preview" style={{ marginTop: "1rem" }}>
             <iframe
               width="560"
               height="315"
-              src={getYoutubeEmbedUrl(formData.video)}
+              src={getYoutubeEmbedUrl(formData.videoUrl)}
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -738,7 +742,10 @@ function AlunoPage() {
                 selectedItem.rotinaId,
                 selectedItem.treinoId,
                 selectedItem.exercicioId,
-                { ...formData, group: selectedGroup }
+                {
+                  ...formData,
+                  group: selectedGroup, // Se quiser armazenar qual grupo do JSON foi selecionado
+                }
               )
             }
             variant="primary"
