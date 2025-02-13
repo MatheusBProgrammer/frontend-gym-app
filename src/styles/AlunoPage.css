@@ -403,3 +403,31 @@ body {
   min-height: 300px;
   margin: 20px auto;
 }
+/* Layout do formulário dentro do modal de Exercício */
+.modal-exercise-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-exercise-form .row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+/* Ajuste do vídeo dentro do modal */
+.video-preview {
+  width: 100px; /* Define largura fixa */
+  height: 100px; /* Define altura fixa */
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .modal-exercise-form .row {
+    grid-template-columns: 1fr;
+  }
+}

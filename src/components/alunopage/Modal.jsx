@@ -3,6 +3,7 @@ import "../styles/Modal.css";
 
 function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
+
   return (
     <div className="modal-overlay">
       <div className="modal">

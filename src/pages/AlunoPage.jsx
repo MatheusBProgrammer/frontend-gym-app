@@ -52,24 +52,16 @@ const getYoutubeEmbedUrl = (url) => {
     : url;
 };
 
-// Array com os grupos musculares para treinos
-const grupoMuscularOptions = [
-  { value: "peito", label: "Peitoral" },
-  { value: "costas", label: "Costas" },
-  { value: "ombros", label: "Ombros" },
-  { value: "biceps", label: "Bíceps" },
-  { value: "triceps", label: "Tríceps" },
-  { value: "gluteos", label: "Glúteos" },
-  { value: "quadriceps", label: "Quadríceps" },
-  { value: "posterior-coxa", label: "Posterior da Coxa" },
-  { value: "panturrilhas", label: "Panturrilhas" },
-  { value: "adutores", label: "Adutores" },
-  { value: "abdutores", label: "Abdutores" },
-  { value: "abdominal", label: "Abdominal" },
-  { value: "lombar", label: "Lombar" },
-  { value: "obliquos", label: "Oblíquos" },
-  { value: "trapezio", label: "Trapézio" },
-  { value: "antebracos", label: "Antebraços" },
+// Extrai apenas as chaves do exercicioList ("peito", "costas", "ombros", etc.)
+const availableGroups = Object.keys(exercicioList);
+
+// Monta as opções de select a partir das chaves do JSON
+const muscleGroupOptions = [
+  { value: "", label: "Selecione o Grupo Muscular", disabled: true },
+  ...availableGroups.map((group) => ({
+    value: group,
+    label: capitalizeFirstLetter(group),
+  })),
 ];
 
 // Array com as opções de métricas para o gráfico de evolução
@@ -93,7 +85,7 @@ function AlunoPage() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // Estado para seleção do grupo do exercício (usando o JSON)
+  // Estado para seleção do grupo do exercício (usando as chaves do JSON)
   const [selectedGroup, setSelectedGroup] = useState("");
 
   // Estados para exibir os gráficos
@@ -129,7 +121,7 @@ function AlunoPage() {
     series: 4,
     descanso: 90,
     observacoes: "",
-    videoUrl: "", // Campo para a URL do vídeo do YouTube
+    videoUrl: "",
   };
 
   useEffect(() => {
@@ -160,9 +152,10 @@ function AlunoPage() {
       } else {
         await method(endpoint, data);
       }
+      // Atualiza o aluno após a alteração
       const updated = await api.get(`/api/aluno/${id}`);
       setAluno(updated.data);
-      fetchAlunos();
+      fetchAlunos(); // caso mantenha uma lista global
     } catch (error) {
       console.error("Erro na operação:", error);
     } finally {
@@ -220,12 +213,12 @@ function AlunoPage() {
   // Função para calcular a distribuição de exercícios por grupo muscular (para o Pie Chart)
   const computeMuscleGroupDistribution = () => {
     const distribution = {};
-    if (aluno.rotinas && Array.isArray(aluno.rotinas)) {
+    if (Array.isArray(aluno.rotinas)) {
       aluno.rotinas.forEach((rotina) => {
-        if (rotina.treinos && Array.isArray(rotina.treinos)) {
+        if (Array.isArray(rotina.treinos)) {
           rotina.treinos.forEach((treino) => {
             const group = treino.grupoMuscular;
-            if (group && treino.exercicios && treino.exercicios.length > 0) {
+            if (group && Array.isArray(treino.exercicios)) {
               distribution[group] =
                 (distribution[group] || 0) + treino.exercicios.length;
             }
@@ -333,22 +326,6 @@ function AlunoPage() {
     },
   };
 
-  // Cria as opções para o select de treino com placeholder
-  const grupoMuscularOptionsWithPlaceholder = [
-    { value: "", label: "Selecione o Grupo Muscular", disabled: true },
-    ...grupoMuscularOptions,
-  ];
-
-  // Para o modal de exercícios, monta as opções a partir do JSON
-  const availableGroups = Object.keys(exercicioList);
-  const exercicioGroupOptions = [
-    { value: "", label: "Selecione o Grupo", disabled: true },
-    ...availableGroups.map((group) => ({
-      value: group,
-      label: capitalizeFirstLetter(group),
-    })),
-  ];
-
   return (
     <div className="aluno-page">
       {/* Cabeçalho */}
@@ -451,6 +428,7 @@ function AlunoPage() {
                   </Button>
                 </div>
               </div>
+
               {rotina.treinos.map((treino) => (
                 <div key={treino._id} className="treino">
                   <div className="treino-header">
@@ -500,7 +478,6 @@ function AlunoPage() {
                           {exercicio.observacoes && (
                             <p>Observações: {exercicio.observacoes}</p>
                           )}
-                          {/* Link para o vídeo */}
                           {exercicio.videoUrl && (
                             <a
                               href={exercicio.videoUrl}
@@ -520,7 +497,6 @@ function AlunoPage() {
                                 exercicioId: exercicio._id,
                               });
                               setFormData(exercicio);
-                              // Se o objeto não tiver "group", usa o grupo do treino
                               setSelectedGroup(
                                 exercicio.group || treino.grupoMuscular || ""
                               );
@@ -545,6 +521,7 @@ function AlunoPage() {
                         </div>
                       </div>
                     ))}
+
                     <Button
                       onClick={() => {
                         setSelectedItem({
@@ -605,7 +582,7 @@ function AlunoPage() {
           onChange={(e) =>
             setFormData({ ...formData, grupoMuscular: e.target.value })
           }
-          options={grupoMuscularOptionsWithPlaceholder}
+          options={muscleGroupOptions}
         />
         <Input
           label="Observações"
@@ -637,6 +614,7 @@ function AlunoPage() {
 
       {/* Modal: Novo/Editar Exercício */}
       <Modal
+        className="teste"
         isOpen={modalType && modalType.includes("exercicio")}
         onClose={() => setModalType(null)}
         title={
@@ -645,123 +623,148 @@ function AlunoPage() {
             : "Novo Exercício"
         }
       >
-        {/* Seleção do Grupo (a partir do JSON) */}
-        <Select
-          label="Grupo do Exercício"
-          value={selectedGroup}
-          onChange={(e) => setSelectedGroup(e.target.value)}
-          options={exercicioGroupOptions}
-        />
-        {/* Se um grupo estiver selecionado, mostra a lista de exercícios
-            e atualiza automaticamente a URL do vídeo do JSON para videoUrl */}
-        {selectedGroup && (
-          <Select
-            label="Exercício"
-            value={formData.nome || ""}
-            onChange={(e) => {
-              const nome = e.target.value;
-              const selectedExercise = exercicioList[selectedGroup].find(
-                (ex) => ex.nome === nome
-              );
-              setFormData({
-                ...formData,
-                nome,
-                // Se no JSON for "videoUrl" => use selectedExercise?.videoUrl
-                // Se no JSON for "video" => use selectedExercise?.video
-                videoUrl: selectedExercise?.video || "",
-              });
-            }}
-            options={exercicioList[selectedGroup].map((exercicio) => ({
-              value: exercicio.nome,
-              label: exercicio.nome,
-            }))}
-          />
-        )}
-        <Select
-          label="Tipo"
-          value={formData.tipo || "musculacao"}
-          onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-          options={[
-            { value: "musculacao", label: "Musculação" },
-            { value: "cardio", label: "Cardio" },
-            { value: "funcional", label: "Funcional" },
-          ]}
-        />
-        <div className="form-row">
-          <Input
-            label="Séries"
-            type="number"
-            value={formData.series || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, series: e.target.value })
-            }
-          />
-          <Input
-            label="Repetições"
-            type="number"
-            value={formData.repeticoes || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, repeticoes: e.target.value })
-            }
-          />
-          <Input
-            label="Descanso (segundos)"
-            type="number"
-            value={formData.descanso || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, descanso: e.target.value })
-            }
-          />
-        </div>
-        <Input
-          label="Observação"
-          value={formData.observacoes || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, observacoes: e.target.value })
-          }
-        />
-        <Input
-          label="URL do Vídeo"
-          value={formData.videoUrl || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, videoUrl: e.target.value })
-          }
-        />
-        {/* Se houver URL, exibe o preview */}
-        {formData.videoUrl && (
-          <div className="video-preview" style={{ marginTop: "1rem" }}>
-            <iframe
-              width="560"
-              height="315"
-              src={getYoutubeEmbedUrl(formData.videoUrl)}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+        {/*
+          Adicionamos a classe "modal-exercise-form" para organizar
+          os campos em filas (rows), deixando o layout mais compacto
+          e responsivo.
+        */}
+        <div className="modal-exercise-form">
+          {/* Linha para selecionar Grupo e Exercício */}
+          <div className="row">
+            <Select
+              label="Grupo do Exercício"
+              value={selectedGroup}
+              onChange={(e) => setSelectedGroup(e.target.value)}
+              options={muscleGroupOptions}
+            />
+
+            {selectedGroup && (
+              <Select
+                label="Exercício"
+                value={formData.nome || ""}
+                onChange={(e) => {
+                  const nome = e.target.value;
+                  const selectedExercise = exercicioList[selectedGroup].find(
+                    (ex) => ex.nome === nome
+                  );
+                  setFormData({
+                    ...formData,
+                    nome,
+                    videoUrl: selectedExercise?.videoUrl || "",
+                  });
+                }}
+                options={exercicioList[selectedGroup].map((ex) => ({
+                  value: ex.nome,
+                  label: ex.nome,
+                }))}
+              />
+            )}
           </div>
-        )}
-        <div className="modal-actions">
-          <Button
-            onClick={() =>
-              handleExercicioAction(
-                selectedItem.rotinaId,
-                selectedItem.treinoId,
-                selectedItem.exercicioId,
-                {
-                  ...formData,
-                  group: selectedGroup, // Se quiser armazenar qual grupo do JSON foi selecionado
-                }
-              )
-            }
-            variant="primary"
-            loading={loading}
-          >
-            Salvar
-          </Button>
-          <Button onClick={() => setModalType(null)} variant="outline">
-            Cancelar
-          </Button>
+
+          {/* Linha para selecionar Tipo */}
+          <div className="row">
+            <Select
+              label="Tipo"
+              value={formData.tipo || "musculacao"}
+              onChange={(e) =>
+                setFormData({ ...formData, tipo: e.target.value })
+              }
+              options={[
+                { value: "musculacao", label: "Musculação" },
+                { value: "cardio", label: "Cardio" },
+                { value: "funcional", label: "Funcional" },
+              ]}
+            />
+          </div>
+
+          {/* Linha de séries, repetições e descanso */}
+          <div className="row">
+            <Input
+              label="Séries"
+              type="number"
+              value={formData.series || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, series: Number(e.target.value) })
+              }
+            />
+            <Input
+              label="Repetições"
+              type="number"
+              value={formData.repeticoes || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, repeticoes: Number(e.target.value) })
+              }
+            />
+            <Input
+              label="Descanso (segundos)"
+              type="number"
+              value={formData.descanso || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, descanso: Number(e.target.value) })
+              }
+            />
+          </div>
+
+          {/* Linha para Observação */}
+          <div className="row">
+            <Input
+              label="Observação"
+              value={formData.observacoes || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, observacoes: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Linha para URL do Vídeo */}
+          <div className="row">
+            <Input
+              label="URL do Vídeo"
+              value={formData.videoUrl || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, videoUrl: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Preview do vídeo, se existir */}
+          {formData.videoUrl && (
+            <div className="video-preview">
+              <iframe
+                width="560"
+                height="315"
+                src={getYoutubeEmbedUrl(formData.videoUrl)}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          )}
+
+          {/* Ações do Modal (Salvar/Cancelar) */}
+          <div className="modal-actions">
+            <Button
+              onClick={() =>
+                handleExercicioAction(
+                  selectedItem.rotinaId,
+                  selectedItem.treinoId,
+                  selectedItem.exercicioId,
+                  {
+                    ...formData,
+                    group: selectedGroup, // se quiser armazenar qual grupo do JSON foi selecionado
+                  }
+                )
+              }
+              variant="primary"
+              loading={loading}
+            >
+              Salvar
+            </Button>
+            <Button onClick={() => setModalType(null)} variant="outline">
+              Cancelar
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

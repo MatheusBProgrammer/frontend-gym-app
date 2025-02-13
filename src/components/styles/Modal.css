@@ -11,25 +11,37 @@
   z-index: 1000;
 }
 
+/* Ajuste de largura e melhor distribuição */
 .modal {
   background-color: #fff;
-  border-radius: 4px;
-  width: 90%;
-  max-width: 500px;
+  border-radius: 8px;
+  width: 70vw; /* Aumenta a largura do modal */
+  max-width: 800px; /* Define um limite máximo */
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal mais compacto no mobile */
+@media (max-width: 768px) {
+  .modal {
+    width: 90vw;
+    max-width: 500px;
+  }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
 }
 
 .modal-close {
@@ -39,8 +51,16 @@
   line-height: 1;
   cursor: pointer;
   color: #555;
+  transition: color 0.2s ease-in-out;
+}
+
+.modal-close:hover {
+  color: #000;
 }
 
 .modal-content {
-  margin-top: 10px;
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
