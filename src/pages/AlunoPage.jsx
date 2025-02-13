@@ -129,8 +129,7 @@ function AlunoPage() {
     series: 4,
     descanso: 90,
     observacoes: "",
-    // Campo para a URL do vídeo do YouTube
-    videoUrl: "",
+    videoUrl: "", // Campo para a URL do vídeo do YouTube
   };
 
   useEffect(() => {
@@ -175,21 +174,25 @@ function AlunoPage() {
   // Operações com rotinas, treinos e exercícios
   const handleCreateRotina = () =>
     handleCRUD(api.post, `/api/aluno/rotina/${id}`);
+
   const handleDeleteRotinas = () =>
     handleCRUD(api.delete, `/api/aluno/rotina/deletar-rotinas`, {
       alunoId: id,
     });
+
   const handleDeleteRotina = (rotinaId) =>
     handleCRUD(api.delete, `/api/aluno/rotina/deletar-rotina`, {
       alunoId: id,
       rotinaId,
     });
+
   const handleTreinoAction = (rotinaId, treinoId = null, data) => {
     const baseEndpoint = `/api/aluno/rotina/${id}/${rotinaId}/treinos`;
     const method = treinoId ? api.put : api.post;
     const endpoint = treinoId ? `${baseEndpoint}/${treinoId}` : baseEndpoint;
     return handleCRUD(method, endpoint, data);
   };
+
   const handleExercicioAction = (
     rotinaId,
     treinoId,
@@ -203,6 +206,7 @@ function AlunoPage() {
       : baseEndpoint;
     return handleCRUD(method, endpoint, data);
   };
+
   const handleDelete = (type, ids) => {
     const endpoints = {
       treino: `/api/aluno/rotina/${id}/${ids.rotinaId}/treinos/${ids.treinoId}`,
@@ -496,7 +500,7 @@ function AlunoPage() {
                           {exercicio.observacoes && (
                             <p>Observações: {exercicio.observacoes}</p>
                           )}
-                          {/* Link ou embed do vídeo */}
+                          {/* Link para o vídeo */}
                           {exercicio.videoUrl && (
                             <a
                               href={exercicio.videoUrl}
@@ -662,7 +666,9 @@ function AlunoPage() {
               setFormData({
                 ...formData,
                 nome,
-                videoUrl: selectedExercise?.video || "", // Se no JSON for "video"
+                // Se no JSON for "videoUrl" => use selectedExercise?.videoUrl
+                // Se no JSON for "video" => use selectedExercise?.video
+                videoUrl: selectedExercise?.video || "",
               });
             }}
             options={exercicioList[selectedGroup].map((exercicio) => ({
