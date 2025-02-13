@@ -33,13 +33,26 @@ ChartJS.register(
   Legend
 );
 
+// Importa a lista de exercícios a partir do JSON atualizado
+import exercicioList from "../utils/ExercicioList.json";
+
 // Função auxiliar para capitalizar a primeira letra de uma string
 const capitalizeFirstLetter = (string) => {
   if (!string) return "";
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-// Array com os grupos musculares pré-definidos
+// Função auxiliar para converter a URL do YouTube para formato embed
+const getYoutubeEmbedUrl = (url) => {
+  const regExp =
+    /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[1].length === 11
+    ? `https://www.youtube.com/embed/${match[1]}`
+    : url;
+};
+
+// Array com os grupos musculares para treinos
 const grupoMuscularOptions = [
   { value: "peito", label: "Peitoral" },
   { value: "costas", label: "Costas" },
@@ -80,12 +93,15 @@ function AlunoPage() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
 
+  // Estado para seleção do grupo do exercício (usando o JSON)
+  const [selectedGroup, setSelectedGroup] = useState("");
+
   // Estados para exibir os gráficos
   const [showChart, setShowChart] = useState(false);
   const [showEvolucao, setShowEvolucao] = useState(false);
   const [historicoMedidas, setHistoricoMedidas] = useState([]);
 
-  // Função para buscar o histórico de medidas (usando POST)
+  // Função para buscar o histórico de medidas (via POST)
   const fetchHistoricoMedidas = async () => {
     try {
       const response = await api.post(`/api/aluno/medidas/historico/${id}`, {
@@ -97,7 +113,6 @@ function AlunoPage() {
     }
   };
 
-  // Alterna a exibição do gráfico de evolução e busca os dados se necessário
   const handleToggleEvolucao = () => {
     if (!showEvolucao) {
       fetchHistoricoMedidas();
@@ -114,6 +129,7 @@ function AlunoPage() {
     series: 4,
     descanso: 90,
     observacoes: "",
+    video: "",
   };
 
   useEffect(() => {
@@ -258,12 +274,11 @@ function AlunoPage() {
     animation: { duration: 800 },
   };
 
-  // Preparando dados para o gráfico de evolução (Line Chart)
+  // Dados para o gráfico de evolução (Line Chart)
   const historicoMedidasSorted = [...historicoMedidas].sort(
     (a, b) => new Date(a.data) - new Date(b.data)
   );
 
-  // Cores definidas para cada métrica (na mesma ordem de metricsOptions)
   const datasetColors = [
     {
       borderColor: "rgba(75,192,192,1)",
@@ -313,10 +328,20 @@ function AlunoPage() {
     },
   };
 
-  // Cria um array de opções para o select de treino com placeholder
+  // Cria as opções para o select de treino com placeholder
   const grupoMuscularOptionsWithPlaceholder = [
     { value: "", label: "Selecione o Grupo Muscular", disabled: true },
     ...grupoMuscularOptions,
+  ];
+
+  // Para o modal de exercícios, monta as opções a partir do JSON
+  const availableGroups = Object.keys(exercicioList);
+  const exercicioGroupOptions = [
+    { value: "", label: "Selecione o Grupo", disabled: true },
+    ...availableGroups.map((group) => ({
+      value: group,
+      label: capitalizeFirstLetter(group),
+    })),
   ];
 
   return (
@@ -335,7 +360,7 @@ function AlunoPage() {
         </Button>
       </header>
 
-      {/* Gráfico de Exercícios por Grupo Muscular (Pie Chart) */}
+      {/* Pie Chart */}
       {showChart && (
         <div
           className="chart-container"
@@ -345,7 +370,7 @@ function AlunoPage() {
         </div>
       )}
 
-      {/* Gráfico de Evolução das Medidas (Line Chart) */}
+      {/* Line Chart */}
       {showEvolucao && historicoMedidas.length > 0 && (
         <div
           className="chart-container"
@@ -389,7 +414,7 @@ function AlunoPage() {
         </Button>
       </section>
 
-      {/* Rotinas de Treino */}
+      {/* Rotinas */}
       <section className="rotinas">
         <h2>Rotinas de Treino</h2>
         {aluno.rotinas.length === 0 ? (
@@ -398,10 +423,6 @@ function AlunoPage() {
           aluno.rotinas.map((rotina, index) => (
             <div key={rotina._id} className="rotina">
               <div className="rotina-header">
-                {/* 
-                  Aqui é aplicado o nome automático da rotina com uma sequência alfabética,
-                  baseada no índice (A para o primeiro, B para o segundo, etc.)
-                */}
                 <h3>
                   Rotina {String.fromCharCode(65 + index)} -{" "}
                   {new Date(rotina.createdAt).toLocaleDateString()}
@@ -428,7 +449,6 @@ function AlunoPage() {
               {rotina.treinos.map((treino) => (
                 <div key={treino._id} className="treino">
                   <div className="treino-header">
-                    {/* Aqui aplicamos a capitalização para o grupo muscular */}
                     <h4>
                       {treino.grupoMuscular
                         ? capitalizeFirstLetter(treino.grupoMuscular)
@@ -466,7 +486,6 @@ function AlunoPage() {
                     {treino.exercicios.map((exercicio) => (
                       <div key={exercicio._id} className="exercicio">
                         <div className="exercicio-info">
-                          {/* Capitaliza o nome do exercício na exibição */}
                           <h5>{capitalizeFirstLetter(exercicio.nome)}</h5>
                           <p>Tipo: {exercicio.tipo}</p>
                           <p>
@@ -475,6 +494,15 @@ function AlunoPage() {
                           <p>Descanso: {exercicio.descanso}s</p>
                           {exercicio.observacoes && (
                             <p>Observações: {exercicio.observacoes}</p>
+                          )}
+                          {exercicio.video && (
+                            <a
+                              href={exercicio.video}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Ver vídeo
+                            </a>
                           )}
                         </div>
                         <div className="exercicio-actions">
@@ -486,6 +514,10 @@ function AlunoPage() {
                                 exercicioId: exercicio._id,
                               });
                               setFormData(exercicio);
+                              // Se o objeto não tiver "group", usa o grupo do treino
+                              setSelectedGroup(
+                                exercicio.group || treino.grupoMuscular || ""
+                              );
                               setModalType("editar_exercicio");
                             }}
                             variant="outline"
@@ -514,6 +546,8 @@ function AlunoPage() {
                           treinoId: treino._id,
                         });
                         setFormData(emptyExercicio);
+                        // Pré-seleciona o grupo do exercício conforme o treino
+                        setSelectedGroup(treino.grupoMuscular);
                         setModalType("novo_exercicio");
                       }}
                       variant="outline"
@@ -528,7 +562,7 @@ function AlunoPage() {
         )}
       </section>
 
-      {/* Modal para Nova Rotina */}
+      {/* Modal: Nova Rotina */}
       <Modal
         isOpen={modalType === "nova_rotina"}
         onClose={() => setModalType(null)}
@@ -549,7 +583,7 @@ function AlunoPage() {
         </div>
       </Modal>
 
-      {/* Modal para Novo/Editar Treino */}
+      {/* Modal: Novo/Editar Treino */}
       <Modal
         isOpen={modalType && modalType.includes("treino")}
         onClose={() => setModalType(null)}
@@ -595,7 +629,7 @@ function AlunoPage() {
         </div>
       </Modal>
 
-      {/* Modal para Novo/Editar Exercício */}
+      {/* Modal: Novo/Editar Exercício */}
       <Modal
         isOpen={modalType && modalType.includes("exercicio")}
         onClose={() => setModalType(null)}
@@ -605,18 +639,36 @@ function AlunoPage() {
             : "Novo Exercício"
         }
       >
-        <Input
-          label="Nome do Exercício"
-          value={formData.nome || ""}
-          onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-          // Ao perder o foco, transforma a primeira letra em maiúscula
-          onBlur={() =>
-            setFormData({
-              ...formData,
-              nome: capitalizeFirstLetter(formData.nome),
-            })
-          }
+        {/* Seleção do Grupo (a partir do JSON) */}
+        <Select
+          label="Grupo do Exercício"
+          value={selectedGroup}
+          onChange={(e) => setSelectedGroup(e.target.value)}
+          options={exercicioGroupOptions}
         />
+        {/* Se um grupo estiver selecionado, mostra a lista de exercícios
+            e atualiza automaticamente a URL do vídeo */}
+        {selectedGroup && (
+          <Select
+            label="Exercício"
+            value={formData.nome || ""}
+            onChange={(e) => {
+              const nome = e.target.value;
+              const selectedExercise = exercicioList[selectedGroup].find(
+                (ex) => ex.nome === nome
+              );
+              setFormData({
+                ...formData,
+                nome,
+                video: selectedExercise?.video || "",
+              });
+            }}
+            options={exercicioList[selectedGroup].map((exercicio) => ({
+              value: exercicio.nome,
+              label: exercicio.nome,
+            }))}
+          />
+        )}
         <Select
           label="Tipo"
           value={formData.tipo || "musculacao"}
@@ -660,6 +712,25 @@ function AlunoPage() {
             setFormData({ ...formData, observacoes: e.target.value })
           }
         />
+        <Input
+          label="URL do Vídeo"
+          value={formData.video || ""}
+          onChange={(e) => setFormData({ ...formData, video: e.target.value })}
+        />
+        {/* Se houver URL, exibe o preview */}
+        {formData.video && (
+          <div className="video-preview" style={{ marginTop: "1rem" }}>
+            <iframe
+              width="560"
+              height="315"
+              src={getYoutubeEmbedUrl(formData.video)}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        )}
         <div className="modal-actions">
           <Button
             onClick={() =>
@@ -667,7 +738,7 @@ function AlunoPage() {
                 selectedItem.rotinaId,
                 selectedItem.treinoId,
                 selectedItem.exercicioId,
-                formData
+                { ...formData, group: selectedGroup }
               )
             }
             variant="primary"
